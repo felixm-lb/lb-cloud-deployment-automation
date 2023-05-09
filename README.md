@@ -2,9 +2,9 @@
 A set of scripts to automate the configuration and deployment of Lightbits in Azure
 
 ## Scripts
-1. configure_installer.sh
-2. configure_target.sh
-3. lightbits_deploy.sh
+[configure_installer.sh](./configure_installer.sh)
+[configure_target.sh](./configure_target.sh)
+[lightbits_deploy.sh](./lightbits_deploy.sh)
 
 ## Use
 
