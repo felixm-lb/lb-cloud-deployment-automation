@@ -49,3 +49,5 @@ This script will run the ansible playbooks to install Lightbits via a docker con
 ```
 sudo bash lightbits_deploy.sh -m install
 ```
+
+For more information, queries or comments, please contact felix@lightbitslabs.com
