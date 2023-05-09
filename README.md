@@ -3,7 +3,9 @@ A set of scripts to automate the configuration and deployment of Lightbits in Az
 
 ## Scripts
 [configure_installer.sh](./configure_installer.sh)
+
 [configure_target.sh](./configure_target.sh)
+
 [lightbits_deploy.sh](./lightbits_deploy.sh)
 
 ## Use
