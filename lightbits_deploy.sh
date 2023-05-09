@@ -347,13 +347,30 @@ EditAnsible()
     sed -i 's/^datapath_config_folder: .*$/datapath_config_folder: "physical-datapath-templates"/' ./roles/install-lightos/tasks/generate_configuration_files.yml
 }
 
+RunAnsible()
+{
+    mkdir -p /opt/lightos-certificates
+    docker run -it --rm --net=host \
+        -v `pwd`/lightos-certificates/:/lightos-certificates \
+        -v `pwd`/:/lb_install \
+        -w /lb_install \
+        docker.lightbitslabs.com/${LB_VERSION}/lb-ansible:4.2.0 \
+        sh -c 'ansible-playbook \
+            -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
+            -e system_jwt_path=/lb_install/lightos_jwt \
+            -e lightos_default_admin_jwt=/lb_install/lightos_default_admin_jwt \
+            -e certificates_directory=/lightos-certificates \
+            -i /lb_install/ansible/inventories/cluster_example/hosts \
+            /lb_install/playbooks/deploy-lightos.yml -vvv'
+}
+
 RunInstall()
 {
     # Run program in install mode
     echo "#############"
     echo "Run Install"
     echo "#############"
-    exit 1
+    RunAnsible
 }
 
 RunDisplay()
