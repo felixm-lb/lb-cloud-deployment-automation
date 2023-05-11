@@ -50,4 +50,11 @@ This script will run the ansible playbooks to install Lightbits via a docker con
 sudo bash lightbits_deploy.sh -m install
 ```
 
+## License, Warranty, Support, and Contact Information
+These tools are provided for convenience and maintaned outside of the Lightbits DevOps process and therefore are not maintained as a part of the Lightbits codebase.
+
+If you received these tools from Lightbits Labs, you are covered under the terms of your license and support agreement provided by Lightbits. Contact info (at) lightbitslabs.com for any questions or support. In all other cases, the following disclaimer applies:
+
+THIS REPOSITORY IS PROVIDED BY LIGHTBITS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL LIGHTBITS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES, LOSS OF USE, LOSS AND/OR CORRUPTION OF DATA, LOST PROFITS, OR BUSINESS INTERRUPTION) OR ANY OTHER LOSS HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS REPOSITORY, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 For more information, queries or comments, please contact felix@lightbitslabs.com
