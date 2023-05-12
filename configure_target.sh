@@ -67,6 +67,17 @@ InstallSoftware()
 
     echo "Enable persistent logging"
     sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
+    
+    echo "Enable syslog log rotation"   # per https://lightbitslabs.atlassian.net/wiki/spaces/~625d41c7b8be7c006a43a96c/pages/2640805889/Improve+Log+Rotation+on+Azure+Red+Hat+8.6+8.7+Gen+2+VMs
+    sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+    
+    echo "Increase partition sizes"     # per https://lightbitslabs.atlassian.net/wiki/spaces/~625d41c7b8be7c006a43a96c/pages/2618753025/Expanding+Space+on+Red+Hat+8.6+Gen+2+Azure+VMs
+    sudo lvextend -L+16G /dev/mapper/rootvg-varlv
+    sudo lvextend -L+16G /dev/mapper/rootvg-homelv
+    sudo lvextend -L+4G /dev/mapper/rootvg-rootlv
+    sudo xfs_growfs /var
+    sudo xfs_growfs /home
+    sudo xfs_growfs /
 
     echo "Reboot"
     sudo shutdown -r now
