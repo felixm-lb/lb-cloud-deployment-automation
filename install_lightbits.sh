@@ -318,7 +318,7 @@ PrepTargets()
     lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
     lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
     read -r -d '' targetPrepCommands << EOF
-sudo yum install -qy wget
+sudo yum install -qy wget iptables
 
 wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
 wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
