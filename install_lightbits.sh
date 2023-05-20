@@ -561,7 +561,7 @@ RunConfigure()
     PrepAnsible
 }
 
-RunAnsible()
+RunAnsibleInstall()
 {
     # Clean up any old certs and JWTs
     sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_jwt
@@ -591,7 +591,7 @@ RunInstall()
     echo "#############"
     CheckClusterName
     CheckVersion
-    RunAnsible
+    RunAnsibleInstall
 }
 
 # Check program mode
