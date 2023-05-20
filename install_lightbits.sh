@@ -354,10 +354,10 @@ fi
 echo "Reboot"
 sudo shutdown -r now
 EOM
-    if [[ ${useKey} == 0 ]]; then
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -l root -A "${targetPrepCommands}"
+    if [ ${useKey} == 0 ]; then
+        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -l root -O StrictHostKeyChecking=false -A "${targetPrepCommands}"
     else
-        pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName}" -A "${targetPrepCommands}"
+        pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName}" -O StrictHostKeyChecking=false -A "${targetPrepCommands}"
     fi
 }
 
