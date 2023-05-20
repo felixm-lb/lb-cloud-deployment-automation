@@ -37,11 +37,11 @@ DisplayHelp()
 
     Full Example (Azure with password):
     ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-2-1-rhl-86
 
     Full Example (AWS with keys):
     ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-2-1-rhl-86
 
 "
 }
@@ -178,6 +178,24 @@ CheckClusterName()
     fi
 }
 
+# Check that the vm type is within the accepted list
+CheckVersion()
+{
+    versionList=(`echo ${LB_JSON} | jq -r '.lbVersions[].versionName'`)
+    containsVersion=0
+    for versionId in "${versionList[@]}"; do
+        if [ "${versionId}" = "${lbVersion}" ]; then
+            containsVersion=1
+        fi
+    done
+    if [ "${containsVersion}" = 0 ]; then
+        echo "Version \"${lbVersion}\" not in accepted list: [${versionList[@]}]!"
+        DisplayHelp
+        exit 1
+    fi
+
+}
+
 # Perform checks on inputs
 CheckConfigure()
 {
@@ -253,24 +271,6 @@ CheckConfigure()
             DisplayHelp
             exit 1
         fi
-    }
-
-    # Check that the vm type is within the accepted list
-    CheckVersion()
-    {
-        versionList=(`echo ${LB_JSON} | jq -r '.lbVersions[].versionName'`)
-        containsVersion=0
-        for versionId in "${versionList[@]}"; do
-            if [ "${versionId}" = "${lbVersion}" ]; then
-                containsVersion=1
-            fi
-        done
-        if [ "${containsVersion}" = 0 ]; then
-            echo "Version \"${lbVersion}\" not in accepted list: [${versionList[@]}]!"
-            DisplayHelp
-            exit 1
-        fi
-
     }
 
     # Parse server ips into array
@@ -584,6 +584,7 @@ RunInstall()
     echo "Run Install"
     echo "#############"
     CheckClusterName
+    CheckVersion
     RunAnsible
 }
 
