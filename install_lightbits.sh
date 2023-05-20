@@ -207,7 +207,7 @@ CheckConfigure()
         {
             # Move key to keys directory
             keyName="${keyPath##*/}"
-            mkdir -p ./keys
+            mkdir -p ${CURRENT_DIR}/${clusterName}/keys
             cp -n "${keyPath}" "${CURRENT_DIR}/${clusterName}/keys/${keyName}"
         }
 
