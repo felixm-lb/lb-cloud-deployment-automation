@@ -17,7 +17,7 @@ SetOptions()
 {
     # Get and set the options
     local OPTIND
-    while getopts ":h:v:t:b:" option; do
+    while getopts ":h:" option; do
         case "${option}" in
             h)
                 DisplayHelp
