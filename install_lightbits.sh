@@ -315,8 +315,8 @@ CheckConfigure()
 PrepTargets()
 {
     echo "Preparing targets: ${ipList}"
-    lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelLinkBase'`
-    lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelVersion'`
+    lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
+    lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
     read -r -d '' targetPrepCommands << EOF
 sudo yum install -qy wget
 
