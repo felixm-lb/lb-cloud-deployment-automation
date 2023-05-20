@@ -343,8 +343,8 @@ sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missin
 LINE=`grep "GRUB_CMDLINE_LINUX" /etc/default/grub`
 MODULE_ADD="module.sig_enforce=0"
 # Get entries
-TRIMMED=`echo $LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
-if [[ ${TRIMMED} == *"${MODULE_ADD}"* ]]; then
+TRIMMED=`echo \$LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
+if [[ \${TRIMMED} == *"\${MODULE_ADD}"* ]]; then
     # Do nothing
     echo "No change."
 else
