@@ -381,7 +381,7 @@ PrepAnsible()
     {
         serverCount=0
         hostsIPSection=""
-        durosnodesSection="[durosnodes]
+        durosnodesSection="[duros_nodes]
 "
         etcdSection="[etcd]
 "
