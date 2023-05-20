@@ -132,7 +132,7 @@ ConfigureInstaller()
         wget 'https://dl.lightbitslabs.com/'${repoToken}'/'${lbVersion}'/raw/files/'${LB_BUILD}'?accept_eula=1' -O "${CURRENT_DIR}/${clusterName}/${LB_BUILD}"
 
         echo "Unpack tarball"
-        tar -xvf "${CURRENT_DIR}/${clusterName}/${LB_BUILD}"
+        tar -xvf "${CURRENT_DIR}/${clusterName}/${LB_BUILD}" -o "${CURRENT_DIR}/${clusterName}/"
     }
 
     # Create a working directory based on cluster name
@@ -355,9 +355,9 @@ echo "Reboot"
 sudo shutdown -r now
 EOM
     if [ ${useKey} == 0 ]; then
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -l root -O StrictHostKeyChecking=false -A "${targetPrepCommands}"
+        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-O StrictHostKeyChecking=no" -l root -A "${targetPrepCommands}"
     else
-        pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName}" -O StrictHostKeyChecking=false -A "${targetPrepCommands}"
+        pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -O StrictHostKeyChecking=no" -A "${targetPrepCommands}"
     fi
 }
 
