@@ -120,7 +120,7 @@ ConfigureInstaller()
         echo "Version=${lbVersion}, Build=${LB_BUILD}"
         
         echo "Logging into docker"
-        sudo docker login docker.lightbitslabs.com -u "${lbVersion}" -p "${LB_TOKEN}"
+        sudo docker login docker.lightbitslabs.com -u "${lbVersion}" -p "${repoToken}"
 
         echo "Pulling docker image"
         sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/lb-ansible
@@ -147,7 +147,7 @@ ConfigureInstaller()
     InstallInstallerSoftware()
     {
         echo "Installing tools"
-        sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        sudo yum -qy install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
         sudo yum install -qy yum-utils pssh sshpass
 
         echo "Add docker repo"
