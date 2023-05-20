@@ -563,7 +563,7 @@ RunConfigure()
 
 RunAnsible()
 {
-    docker run -it --rm --net=host \
+    sudo docker run -it --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
         -w /lb_install \
