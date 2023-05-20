@@ -37,11 +37,11 @@ DisplayHelp()
 
     Full Example (Azure with password):
     ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install
+    ${0##*/} -m install -c test-cluster
 
     Full Example (AWS with keys):
     ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install
+    ${0##*/} -m install -c test-cluster
 
 "
 }
@@ -583,6 +583,7 @@ RunInstall()
     echo "#############"
     echo "Run Install"
     echo "#############"
+    CheckClusterName
     RunAnsible
 }
 
