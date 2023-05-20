@@ -359,7 +359,7 @@ EOM
         sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-O StrictHostKeyChecking=no" -l root -A "${targetPrepCommands}"
     else
         echo "Using key!"
-        pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -O StrictHostKeyChecking=no" -A "${targetPrepCommands}"
+        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" "${targetPrepCommands}"
     fi
 }
 
