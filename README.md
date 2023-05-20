@@ -14,8 +14,8 @@ This script will configure the ansible files for a given cloud storage VM. It wo
 1. Ensure that git has been installed on the installer: `sudo yum install -y git`
 2. Download file onto installer: `git clone https://github.com/felixm-lb/lb-cloud-deployment-automation.git`
 3. Run:
-   1. With user/password authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
-   2. With key authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
+   1. With user/password authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n l16s_v3 -i "10.0.0.1,10.0.0.2,10.0.0.3" -u azureuser -p 'password' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
+   2. With key authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n i3en.6xlarge -i "10.0.0.1,10.0.0.2,10.0.0.3" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
 
 ### Install Lightbits (Installer Mode)
 > **_NOTE:_** This script must be run AFTER the install_lightbits.sh -m configure has been run. Essentially, Ansible needs to be good to go and the targets configured.
