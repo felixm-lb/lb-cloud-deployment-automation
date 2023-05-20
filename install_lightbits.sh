@@ -123,7 +123,7 @@ ConfigureInstaller()
         sudo docker login docker.lightbitslabs.com -u "${lbVersion}" -p "${repoToken}"
 
         echo "Pulling docker image"
-        sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/lb-ansible
+        sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/lb-ansible:4.2.0
 
         echo "Installing wget"
         sudo yum install -qy wget
@@ -573,7 +573,7 @@ RunAnsible()
             -e system_jwt_path=/lb_install/lightos_jwt \
             -e lightos_default_admin_jwt=/lb_install/lightos_default_admin_jwt \
             -e certificates_directory=/lightos-certificates \
-            -i /lb_install/ansible/inventories/cluster_example/hosts \
+            -i /lb_install/ansible/inventories/'${clusterName}'/hosts \
             /lb_install/playbooks/deploy-lightos.yml -vvv'
 }
 
