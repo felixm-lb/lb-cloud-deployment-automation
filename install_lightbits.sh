@@ -168,6 +168,16 @@ ConfigureInstaller()
     CreatePsshClientFile
 }
 
+# Check cluster name provided
+CheckClusterName()
+{
+    if [ -z "${clusterName}" ]; then
+        echo "No cluster name provided!"
+        DisplayHelp
+        exit 1
+    fi
+}
+
 # Perform checks on inputs
 CheckConfigure()
 {
@@ -189,16 +199,6 @@ CheckConfigure()
             exit 1
         fi
 
-    }
-
-    # Check cluster name provided
-    CheckClusterName()
-    {
-        if [ -z "${clusterName}" ]; then
-            echo "No cluster name provided!"
-            DisplayHelp
-            exit 1
-        fi
     }
 
     # Check if a key or password has been provided
