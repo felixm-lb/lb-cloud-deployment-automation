@@ -355,8 +355,10 @@ echo "Reboot"
 sudo shutdown -r now
 EOM
     if [ ${useKey} == 0 ]; then
+        echo "Using Password!"
         sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-O StrictHostKeyChecking=no" -l root -A "${targetPrepCommands}"
     else
+        echo "Using key!"
         pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -O StrictHostKeyChecking=no" -A "${targetPrepCommands}"
     fi
 }
