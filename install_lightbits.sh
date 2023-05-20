@@ -126,7 +126,7 @@ ConfigureInstaller()
         sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/lb-ansible
 
         echo "Installing wget"
-        sudo yum install wget
+        sudo yum install -qy wget
 
         echo "Pull install tarball"
         wget 'https://dl.lightbitslabs.com/'${repoToken}'/'${lbVersion}'/raw/files/'${LB_BUILD}'?accept_eula=1' -O "${CURRENT_DIR}/${clusterName}/${LB_BUILD}"
@@ -147,7 +147,8 @@ ConfigureInstaller()
     InstallInstallerSoftware()
     {
         echo "Installing tools"
-        sudo yum install -y yum-utils pssh sshpass
+        sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        sudo yum install -qy yum-utils pssh sshpass
 
         echo "Add docker repo"
         sudo yum-config-manager \
@@ -155,14 +156,14 @@ ConfigureInstaller()
             https://download.docker.com/linux/centos/docker-ce.repo
 
         echo "Install docker"
-        sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        sudo yum install -qy docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
         echo "Enable and start docker service"
         sudo systemctl enable docker && sudo systemctl start docker
     }
 
     InstallInstallerSoftware
-    MakeWorkingDirectory
+    MakeWorkingDirectories
     PullInstallerSoftware
     CreatePsshClientFile
 }
@@ -170,7 +171,7 @@ ConfigureInstaller()
 # Perform checks on inputs
 CheckConfigure()
 {
-    sudo yum install -y jq
+    sudo yum install -qy jq
 
     # Check that the vm type is within the accepted list
     CheckVMType()
@@ -315,7 +316,7 @@ PrepTargets()
     lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelLinkBase'`
     lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelVersion'`
     targetPrepCommands=<<-EOM
-sudo yum install -y wget
+sudo yum install -qy wget
 
 wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
 wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
