@@ -40,8 +40,8 @@ DisplayHelp()
     ${0##*/} -m install
 
     Full Example (AWS with keys):
-    $FUNCNAME -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    $FUNCNAME -m install
+    ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
+    ${0##*/} -m install
 
 "
 }
