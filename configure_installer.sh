@@ -4,6 +4,20 @@
 #### GLOBAL VARIABLES ####
 LB_VERSION="lightos-3-1-2-rhl-86"
 LB_BUILD="light-app-install-environment-v3.1.2~b1127.tgz"
+LB_JSON="{\"lbVersions\": [
+    {
+        \"versionName\": \"lightos-3-1-2-rhl-86\",
+        \"versionLightApp\": \"light-app-install-environment-v3.1.2~b1127.tgz\",
+        \"kernelVersion\": \"4.18.0-425.3.1.el8.x86_64\",
+        \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8/BaseOS/x86_64/os/Packages/\"
+    },
+    {
+        \"versionName\": \"lightos-3-2-1-rhl-86\",
+        \"versionLightApp\": \"light-app-install-environment-v3.2.1~b1252.tgz\",
+        \"kernelVersion\": \"4.18.0-425.19.2.el8_7.x86_64\",
+        \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.7/BaseOS/x86_64/os/Packages/\"
+    }
+]}"
 
 DisplayHelp()
 {
@@ -14,7 +28,6 @@ DisplayHelp()
     options:                                    example:
     h   Display This Help.
     v   Lightbits Version.                      lightos-3-1-2-rhl-86 (Default)
-    b   Lightapp Build Tarball.                 light-app-install-environment-v3.1.2~b1127.tgz (Default)
     t   Lightbits Repository token.             QWCEWVDASADSSsSD (Required)
 
 "
@@ -25,16 +38,13 @@ SetOptions()
 {
     # Get and set the options
     local OPTIND
-    while getopts ":h:v:t:b:" option; do
+    while getopts ":h:v:t:" option; do
         case "${option}" in
             h)
                 DisplayHelp
                 exit;;
             v)
                 INS_VERSION="$OPTARG"
-                ;;
-            b)
-                INS_BUILD="$OPTARG"
                 ;;
             t)
                 LB_TOKEN="$OPTARG"
@@ -77,19 +87,11 @@ CheckVersion()
     fi
 }
 
-CheckBuild()
-{
-    # Check that the build has been provided
-    if [ -z "${INS_VERSION}" ]; then
-        echo "No build provided, using default: ${LB_BUILD}!"
-    else
-        echo "Using light-app build ${INS_BUILD}!"
-        LB_BUILD="${INS_BUILD}"
-    fi
-}
-
 InstallSoftware()
 {
+    echo "Installing tools"
+    sudo yum install -y jq
+    
     echo "Uninstalling docker"
     sudo yum remove docker \
                   docker-client \
@@ -119,6 +121,9 @@ InstallSoftware()
 
 PullInstallSoftware()
 {
+    LB_BUILD=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .versionLightApp'`
+    echo "Version=${LB_VERSION}, Build=${LB_BUILD}"
+    
     echo "Logging into docker"
     sudo docker login docker.lightbitslabs.com -u "${LB_VERSION}" -p "${LB_TOKEN}"
 
