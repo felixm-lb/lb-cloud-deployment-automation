@@ -139,8 +139,8 @@ ConfigureInstaller()
     MakeWorkingDirectories()
     {
         echo "Creating working directory: ${CURRENT_DIR}/${clusterName}"
-        mkdir "${CURRENT_DIR}/${clusterName}"
-        mkdir "${CURRENT_DIR}/${clusterName}/lightos-certificates"
+        mkdir -p "${CURRENT_DIR}/${clusterName}"
+        mkdir -p "${CURRENT_DIR}/${clusterName}/lightos-certificates"
     }
 
     # Installs prerequisite software on the installer
@@ -371,9 +371,9 @@ PrepAnsible()
     # Create a working directory inside ansible to store cluster information
     CreateAnsibleDirectories()
     {
-        mkdir ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}
-        mkdir ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/host_vars
-        mkdir ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars
+        mkdir -p ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}
+        mkdir -p ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/host_vars
+        mkdir -p ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars
     }
 
     # Iterate through the server array and create the hosts file
@@ -411,7 +411,7 @@ auto_reboot=false
 "
 
         # Write output
-        tee -a ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/hosts > /dev/null << EOL
+        tee ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/hosts > /dev/null << EOL
 ${hostsIPSection}
 ${durosnodesSection}
 ${durosnodesVarsSection}
@@ -444,8 +444,8 @@ nodes:
         - partition == false
         - size >= gib(300)
 #      - name =~ "nvme0n1"
-"
-    tee -a ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/host_vars/${serverName}.yml > /dev/null << EOL
+"   
+    tee ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/host_vars/${serverName}.yml > /dev/null << EOL
 ${fileContent}
 EOL
     }
@@ -506,7 +506,7 @@ EOL
     CreateGroupVars()
     {
         # Create the all.yml file within the group_vars directory and configure for cloud
-        tee -a ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars/all.yml > /dev/null << EOL
+        tee ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars/all.yml > /dev/null << EOL
 ---
 use_lightos_kernel: false
 enable_iptables: false
