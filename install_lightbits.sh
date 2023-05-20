@@ -210,6 +210,7 @@ CheckConfigure()
             keyName="${keyPath##*/}"
             mkdir -p ${CURRENT_DIR}/${clusterName}/keys
             cp -n "${keyPath}" "${CURRENT_DIR}/${clusterName}/keys/${keyName}"
+            sudo chmod 400 "${CURRENT_DIR}/${clusterName}/keys/${keyName}"
         }
 
         useKey=0
@@ -356,7 +357,7 @@ sudo shutdown -r now
 EOF
     if [ ${useKey} == 0 ]; then
         echo "Using Password!"
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-O StrictHostKeyChecking=no" -l root -A "${targetPrepCommands}"
+        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A "${targetPrepCommands}"
     else
         echo "Using key!"
         sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" "${targetPrepCommands}"
