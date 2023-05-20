@@ -132,7 +132,7 @@ ConfigureInstaller()
         wget 'https://dl.lightbitslabs.com/'${repoToken}'/'${lbVersion}'/raw/files/'${LB_BUILD}'?accept_eula=1' -O "${CURRENT_DIR}/${clusterName}/${LB_BUILD}"
 
         echo "Unpack tarball"
-        tar -xvf "${CURRENT_DIR}/${clusterName}/${LB_BUILD}" -o "${CURRENT_DIR}/${clusterName}/"
+        tar -xvf "${CURRENT_DIR}/${clusterName}/${LB_BUILD}" -C "${CURRENT_DIR}/${clusterName}/"
     }
 
     # Create a working directory based on cluster name
