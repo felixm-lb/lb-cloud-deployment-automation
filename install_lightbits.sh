@@ -405,7 +405,7 @@ PrepAnsible()
         done
 
         durosnodesVarsSection="[duros_nodes:vars]
-local_repo_base_url=https://dl.lightbitslabs.com/${repoToken}/${LB_VERSION}/rpm/el/8/$basearch
+local_repo_base_url=https://dl.lightbitslabs.com/${repoToken}/${lbVersion}/rpm/el/8/$basearch
 cluster_identifier=ae7bdeef-897e-4c5b-abef-20234abf21bf
 auto_reboot=false
 "
@@ -567,7 +567,7 @@ RunAnsible()
     sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_jwt
     sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_default_admin_jwt
     sudo rm -rf ${CURRENT_DIR}/${clusterName}/lightos-certificates
-    
+
     # Run ansible
     sudo docker run -it --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
