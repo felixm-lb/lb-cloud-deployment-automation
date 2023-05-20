@@ -564,11 +564,11 @@ RunConfigure()
 RunAnsible()
 {
     # Clean up any old certs and JWTs
-    sudo rm ${CURRENT_DIR}/${clusterName}/lightos_jwt
-    sudo rm ${CURRENT_DIR}/${clusterName}/lightos_default_admin_jwt
-
-    # Run ansible
+    sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_jwt
+    sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_default_admin_jwt
     sudo rm -rf ${CURRENT_DIR}/${clusterName}/lightos-certificates
+    
+    # Run ansible
     sudo docker run -it --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
@@ -579,7 +579,7 @@ RunAnsible()
             -e system_jwt_path=/lb_install/lightos_jwt \
             -e lightos_default_admin_jwt=/lb_install/lightos_default_admin_jwt \
             -e certificates_directory=/lightos-certificates \
-            -i /lb_install/ansible/inventories/${clusterName}/hosts \
+            -i /lb_install/ansible/inventories/"'${clusterName}'"/hosts \
             /lb_install/playbooks/deploy-lightos.yml -vvv'
 }
 
