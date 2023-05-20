@@ -405,7 +405,7 @@ PrepAnsible()
         done
 
         durosnodesVarsSection="[duros_nodes:vars]
-local_repo_base_url=https://dl.lightbitslabs.com/${repoToken}/${lbVersion}/rpm/el/8/$basearch
+local_repo_base_url=https://dl.lightbitslabs.com/${repoToken}/${lbVersion}/rpm/el/8/\$basearch
 cluster_identifier=ae7bdeef-897e-4c5b-abef-20234abf21bf
 auto_reboot=false
 "
