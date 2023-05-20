@@ -314,6 +314,7 @@ CheckConfigure()
 # Prepare the target hosts
 PrepTargets()
 {
+    echo "Preparing targets: ${ipList}"
     lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelLinkBase'`
     lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelVersion'`
     read -r -d '' targetPrepCommands << EOF
@@ -357,10 +358,10 @@ sudo shutdown -r now
 EOF
     if [ ${useKey} == 0 ]; then
         echo "Using Password!"
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A "${targetPrepCommands}"
+        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 "${targetPrepCommands}"
     else
         echo "Using key!"
-        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" "${targetPrepCommands}"
+        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 "${targetPrepCommands}"
     fi
 }
 
