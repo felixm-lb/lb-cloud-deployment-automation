@@ -315,7 +315,7 @@ PrepTargets()
 {
     lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelLinkBase'`
     lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${LB_VERSION}'") | .kernelVersion'`
-    targetPrepCommands=<<-EOM
+    read -r -d '' targetPrepCommands << EOF
 sudo yum install -qy wget
 
 wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
@@ -353,7 +353,7 @@ fi
 
 echo "Reboot"
 sudo shutdown -r now
-EOM
+EOF
     if [ ${useKey} == 0 ]; then
         echo "Using Password!"
         sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-O StrictHostKeyChecking=no" -l root -A "${targetPrepCommands}"
