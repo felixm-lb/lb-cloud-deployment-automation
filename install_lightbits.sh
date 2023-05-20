@@ -23,7 +23,7 @@ DisplayHelp()
 {
     echo "This script will configure the installation and install Lightbits on VMs in the cloud.
    
-    Syntax: $FUNCNAME [-m|n|i|u|p|k|t|v|c]
+    Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
     options:                                     example:
     m    Configure mode.                         configure, install
     n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal
@@ -36,8 +36,8 @@ DisplayHelp()
     c    Lightbits Cluster Name.                 aws-cluster-0
 
     Full Example (Azure with password):
-    $FUNCNAME -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    $FUNCNAME -m install
+    ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
+    ${0##*/} -m install
 
     Full Example (AWS with keys):
     $FUNCNAME -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
