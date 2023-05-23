@@ -7,7 +7,7 @@ A script to automate the 'manual' configuration and deployment of Lightbits in t
 ## Use
 
 ### Install Lightbits (Configure Mode)
-> **_NOTE:_** This script must be run on a RHEL 8 instance.
+> **_NOTE:_** This script must be run on a RHEL 8/Alma 8 instance.
 
 This script will configure the ansible files for a given cloud storage VM. It works for both AWS and Azure.
 
