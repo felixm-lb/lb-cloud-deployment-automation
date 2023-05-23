@@ -1,54 +1,28 @@
-# lb-azure-deployment-automation
-A set of scripts to automate the configuration and deployment of Lightbits in Azure
+# lb-cloud-deployment-automation
+A script to automate the 'manual' configuration and deployment of Lightbits in the cloud.
 
 ## Scripts
-[configure_installer.sh](./configure_installer.sh)
-
-[configure_target.sh](./configure_target.sh)
-
-[lightbits_deploy.sh](./lightbits_deploy.sh)
+[install_lightbits.sh](./install_lightbits.sh)
 
 ## Use
 
-### Configure Installer
-This script will take a standard Azure RHEL 8.6 machine and get it ready to install Lightbits using Ansible.
+### Install Lightbits (Configure Mode)
+> **_NOTE:_** This script must be run on a RHEL 8 instance.
 
-1. Download file onto installer machine running RHEL 8.6 in Azure
-2. Run:
-```
-sudo bash configure_installer.sh -t ${Lightbits_repo_token}
-```
+This script will configure the ansible files for a given cloud storage VM. It works for both AWS and Azure.
 
-### Configure Target
-This script will take a standard Azure RHEL 8.6 machine and get it ready to be a target for Lightbits.
-
-1. Download file onto Lightbits target node running RHEL 8.6 in Azure
-2. Run:
-```
-sudo bash configure_target.sh
-```
-
-### Lightbits Deploy (Configure Mode)
-> **_NOTE:_** This script must be run AFTER the configure_installer and configure_target, otherwise it'll fail.
-
-This script will configure the ansible files for a given Azure storage VM.
-
-1. Download file onto installer that has already run "configure_installer.sh"
-2. Move file into working directory with "ansible.cfg" file
+1. Ensure that git has been installed on the installer: `sudo yum install -y git`
+2. Download file onto installer: `git clone https://github.com/felixm-lb/lb-cloud-deployment-automation.git`
 3. Run:
-```
-sudo bash lightbits_deploy.sh -m configure -n l16s_v3 -i "10.0.0.1,10.0.0.2,10.0.0.3" -k /home/azureuser/key.pem -t 'LIGHTBITSREPOTOKEN'
-```
+   1. With user/password authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n l16s_v3 -i "10.0.0.1,10.0.0.2,10.0.0.3" -u azureuser -p 'password' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
+   2. With key authentication: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m configure -n i3en.6xlarge -i "10.0.0.1,10.0.0.2,10.0.0.3" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster`
 
-### Lightbits Deploy (Installer Mode)
-> **_NOTE:_** This script must be run AFTER the lightbits_deploy.sh -m configure has been run. Essentially, Ansible needs to be good to go.
+### Install Lightbits (Installer Mode)
+> **_NOTE:_** This script must be run AFTER the install_lightbits.sh -m configure has been run. Essentially, Ansible needs to be good to go and the targets configured.
 
 This script will run the ansible playbooks to install Lightbits via a docker container.
 
-1. Run:
-```
-sudo bash lightbits_deploy.sh -m install
-```
+1. Run: `sudo bash lb-cloud-deployment-automation/install_lightbits.sh -m install -c test-cluster -v lightos-3-2-1-rhl-86`
 
 ## License, Warranty, Support, and Contact Information
 These tools are provided for convenience and maintaned outside of the Lightbits DevOps process and therefore are not maintained as a part of the Lightbits codebase.
