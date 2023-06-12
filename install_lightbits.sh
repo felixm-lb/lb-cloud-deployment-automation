@@ -538,8 +538,8 @@ EOL
         sudo sed -i "s/datapath_config_folder: 'virtual-datapath-templates'/datapath_config_folder: 'physical-datapath-templates'/" ${CURRENT_DIR}/${clusterName}/roles/install-lightos/tasks/generate_configuration_files.yml
 
         # Edit the jinja files to set min_replica to 1
-        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' test-cluster/roles/install-lightos/templates/management-templates/cluster-manager.yaml.j2
-        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' test-cluster/roles/install-lightos/templates/management-templates/api-service.yaml.j2
+        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/cluster-manager.yaml.j2
+        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/api-service.yaml.j2
     }
 
     CreateAnsibleDirectories
