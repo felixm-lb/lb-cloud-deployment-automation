@@ -38,7 +38,7 @@ DisplayHelp()
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
     k    Path to key.                            /home/root/keys/key.pem
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
-    v    Lightbits Version.                      lightos-3-2-1-rhl-86
+    v    Lightbits Version.                      lightos-3-1-2-rhl-86, lightos-3-2-1-rhl-86, lightos-3-3-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
 
     Full Example (Azure with password):
