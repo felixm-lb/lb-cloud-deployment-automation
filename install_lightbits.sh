@@ -16,7 +16,7 @@ LB_JSON="{\"lbVersions\": [
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.7/BaseOS/x86_64/os/Packages/\"
     },
     {
-        \"versionName\": \"lightos-3-3-1-rhl-86\",
+        \"versionName\": \"lightos-3-3-1-rhl-8\",
         \"versionLightApp\": \"light-app-install-environment-v3.3.1~b1335.tgz\",
         \"kernelVersion\": \"4.18.0-477.13.1.el8_8.x86_64\",
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.8/BaseOS/x86_64/os/Packages/\"
