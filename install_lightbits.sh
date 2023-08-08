@@ -10,7 +10,6 @@
 #                    fix docker ansible execution: using 'sudo docker run -i' instead of 'sudo docker run -it"
 #                    TODO: to consider add support for dual nodes data interfaces
 INSTALL_LIGHTBITS_VERSION="V1.01"
-yum install jq -y
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -192,6 +191,7 @@ ConfigureInstaller()
     InstallInstallerSoftware()
     {
         echo "Installing tools"
+        sudo yum install jq -y
         sudo yum -qy install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
         sudo yum install -qy yum-utils pssh sshpass
 
