@@ -7,6 +7,7 @@
 #                    added some echo prints (ease debug)
 #                    added install for jq (was missing on some vanila's)
 #                    added centos ga 3-3-x option (w.o kernel base)
+#                    fix docker ansible execution: using 'sudo docker run -i' instead of 'sudo docker run -it"
 #                    TODO: to consider add support for dual nodes data interfaces
 INSTALL_LIGHTBITS_VERSION="V1.01"
 yum install jq -y
@@ -225,6 +226,7 @@ CheckClusterName()
 # Check that the vm type is within the accepted list
 CheckVersion()
 {
+    echo "Check version..."
     versionList=(`echo ${LB_JSON} | jq -r '.lbVersions[].versionName'`)
     containsVersion=0
     for versionId in "${versionList[@]}"; do
@@ -243,7 +245,7 @@ CheckVersion()
 # Perform checks on inputs
 CheckConfigure()
 {
-    sudo yum install -qy jq
+    echo "Check configure..."
 
     # Check that the vm type is within the accepted list
     CheckVMType()
@@ -681,13 +683,15 @@ RunConfigure()
 
 RunAnsibleInstall()
 {
+    echo "Do some cleanups..."
     # Clean up any old certs and JWTs
     sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_jwt
     sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_default_admin_jwt
     sudo rm -rf ${CURRENT_DIR}/${clusterName}/lightos-certificates
 
     # Run ansible
-    sudo docker run -it --rm --net=host \
+    echo "Run ansible with: docker run -i ..."
+    sudo docker run -i --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
         -w /lb_install \
