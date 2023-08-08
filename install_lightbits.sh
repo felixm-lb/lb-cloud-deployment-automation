@@ -9,7 +9,9 @@
 #                    added centos ga 3-3-x option (w.o kernel base)
 #                    fix docker ansible execution: using 'sudo docker run -i' instead of 'sudo docker run -it"
 #                    TODO: to consider add support for dual nodes data interfaces
-INSTALL_LIGHTBITS_VERSION="V1.01"
+# 08-Aug-2023 [OE]   add jq install also in CheckVersion
+#
+INSTALL_LIGHTBITS_VERSION="V1.02"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -227,6 +229,7 @@ CheckClusterName()
 CheckVersion()
 {
     echo "Check version..."
+    sudo yum install jq -y
     versionList=(`echo ${LB_JSON} | jq -r '.lbVersions[].versionName'`)
     containsVersion=0
     for versionId in "${versionList[@]}"; do
