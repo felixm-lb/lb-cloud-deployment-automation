@@ -1,8 +1,24 @@
 #!/usr/bin/bash
 # This script will install Lightbits in the cloud from an installer instance
+#
+# Updates:
+# --------
+# 07-Aug-2023 [OE]   added 'generic' node/server option, support now only single-node 4 to 12 ssds, no chrony, data-ips conf for single data interface
+#                    added some echo prints (ease debug)
+#                    added install for jq (was missing on some vanila's)
+#                    added centos ga 3-3-x option (w.o kernel base)
+#                    TODO: to consider add support for dual nodes data interfaces
+INSTALL_LIGHTBITS_VERSION="V1.01"
+yum install jq -y
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
+    {
+        \"versionName\": \"lightos-3-3-x-ga\",
+        \"versionLightApp\": \"light-app-install-environment-v3.3.1~b1334.tgz\",
+        \"kernelVersion\": \"\",
+        \"kernelLinkBase\": \"\"
+    },
     {
         \"versionName\": \"lightos-3-1-2-rhl-86\",
         \"versionLightApp\": \"light-app-install-environment-v3.1.2~b1127.tgz\",
@@ -27,12 +43,12 @@ CURRENT_DIR=`pwd`
 # Display help menu
 DisplayHelp()
 {
-    echo "This script will configure the installation and install Lightbits on VMs in the cloud.
+    echo "This script will configure the installation and install Lightbits on VMs in the cloud or generic server. $INSTALL_LIGHTBITS_VERSION
    
     Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
     options:                                     example:
     m    Configure mode.                         configure, install
-    n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal
+    n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
     i    List of server IPs.                     \"10.0.0.1,10.0.0.2,10.0.0.3\"
     u    Username.                               root
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
@@ -40,6 +56,7 @@ DisplayHelp()
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
     v    Lightbits Version.                      lightos-3-1-2-rhl-86, lightos-3-2-1-rhl-86, lightos-3-3-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
+    d    Data IPs                                optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
 
     Full Example (Azure with password):
     ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
@@ -49,7 +66,14 @@ DisplayHelp()
     ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
     ${0##*/} -m install -c test-cluster -v lightos-3-2-1-rhl-86
 
+    Full Example (generic/pre-allocated-lab-servers, with password):
+    ${0##*/} -m configure -n generic -i \"rack99-server01,rack99-server02,rack99-server03\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-3-x-ga -c test-cluster -d \"10.109.11.251,10.109.11.252,10.109.11.253\"
+    ${0##*/} -m install -c test-cluster -v lightos-3-3-x-ga
+
+    Notes
+    For generic server need to provide data ip, only single lb node is created on generic server
 "
+
 }
 
 # Get entered options and set them as variables
@@ -57,7 +81,7 @@ SetOptions()
 {
     # Get and set the options
     local OPTIND
-    while getopts ":h:m:n:i:u:p:k:t:v:c:" option; do
+    while getopts ":h:m:n:i:u:p:k:t:v:c:d:" option; do
         case "${option}" in
             h)
                 DisplayHelp
@@ -89,6 +113,9 @@ SetOptions()
             c)
                 clusterName="$OPTARG"
                 ;;
+            d)
+                dataIPs="$OPTARG"
+                ;;
             :)
                 if [ "${OPTARG}" != "h" ]; then
                     printf "missing argument for -%s\n" "$OPTARG" >&2
@@ -104,6 +131,17 @@ SetOptions()
         esac
     done
     shift $((OPTIND-1))
+
+
+    if [ -z "${dataIPs}" ]; then # not provided data ips?
+        if [ "${node}" == "generic" ]; then # for generic server must provide dataIPs
+            echo "missing dataIPs, must provide dataIPs (-d) for generic servers"
+            DisplayHelp
+            exit 1
+        else # cloud servers, use same data ips as managment ips (ipList)
+            dataIPs=${ipList}
+        fi
+    fi
 }
 
 # Configures the installer instance
@@ -210,7 +248,7 @@ CheckConfigure()
     # Check that the vm type is within the accepted list
     CheckVMType()
     {
-        nodeList=("l16s_v3" "l32s_v3" "l64s_v3" "l80s_v3" "i3en.6xlarge" "i3en.12xlarge" "i3en.24xlarge" "i3en.metal" "i4i.8xlarge" "i4i.16xlarge" "i4i.32xlarge" "i4i.metal")
+        nodeList=("l16s_v3" "l32s_v3" "l64s_v3" "l80s_v3" "i3en.6xlarge" "i3en.12xlarge" "i3en.24xlarge" "i3en.metal" "i4i.8xlarge" "i4i.16xlarge" "i4i.32xlarge" "i4i.metal" "generic")
         containsNode=0
         for nodeType in "${nodeList[@]}"; do
             if [ "${nodeType}" = "${node}" ]; then
@@ -288,6 +326,7 @@ CheckConfigure()
             DisplayHelp
             exit 1
         fi
+
         # Convert string into array
         serverIPs=($(echo "${ipList}" | tr ',' '\n'))
         # Check min 3 nodes
@@ -301,9 +340,30 @@ CheckConfigure()
             echo "Duplicate values found in ${ipList}, please remove them!"
             exit 1
         fi
-        # Check max 16 nodes
-        if [[ "${#serverIPs[@]}" -gt 16 ]]; then
-            echo "Maximum 16 nodes required, ${#serverIPs[@]} provided: ${ipList}"
+
+        # Check max 16 nodes ...[OE] i removed to allow larger installations
+        #if [[ "${#serverIPs[@]}" -gt 16 ]]; then
+        #    echo "Maximum 16 nodes required, ${#serverIPs[@]} provided: ${ipList}"
+        #    exit 1
+        #fi
+
+        if [ -z "${dataIPs}" ]; then
+            echo "No Server data IPs found!"
+            DisplayHelp
+            exit 1
+        fi
+
+        # Convert string into array
+        serverDataIPs=($(echo "${dataIPs}" | tr ',' '\n'))
+        # Check min 3 nodes
+        if [[ "${#serverDataIPs[@]}" -lt 3 ]]; then
+            echo "Minimum 3 nodes data ip required, ${#serverDataIPs[@]} provided: ${dataIPs}"
+            exit 1
+        fi
+        # Check no duplicate IPs provided
+        uniqueNum=$(printf '%s\n' "${serverDataIPs[@]}"|awk '!($0 in seen){seen[$0];c++} END {print c}')
+        if [[ "${uniqueNum}" != "${#serverDataIPs[@]}" ]]; then
+            echo "Duplicate values found in ${dataIPs}, please remove them!"
             exit 1
         fi
     }
@@ -320,54 +380,61 @@ CheckConfigure()
 # Prepare the target hosts
 PrepTargets()
 {
-    echo "Preparing targets: ${ipList}"
+    echo "Check for preparing targets kernel: ${ipList}"
     lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
     lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
-    read -r -d '' targetPrepCommands << EOF
-sudo yum install -qy wget iptables
 
-wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
-wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
-wget "${lbKernelBaseURL}kernel-${lbKernelVersion}.rpm"
-
-sudo rpm -i "kernel-core-${lbKernelVersion}.rpm"
-sudo rpm -i "kernel-modules-${lbKernelVersion}.rpm"
-sudo rpm -i "kernel-${lbKernelVersion}.rpm"
-
-sudo grubby --set-default="/boot/vmlinuz-${lbKernelVersion}"
-
-echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
-
-sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
-
-sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
-
-sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
-
-# Enable unsigned kernel modules
-# Get line
-LINE=`grep "GRUB_CMDLINE_LINUX" /etc/default/grub`
-MODULE_ADD="module.sig_enforce=0"
-# Get entries
-TRIMMED=`echo \$LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
-if [[ \${TRIMMED} == *"\${MODULE_ADD}"* ]]; then
-    # Do nothing
-    echo "No change."
-else
-    # Replace line
-    NEW_LINE="GRUB_CMDLINE_LINUX=\"${TRIMMED} ${MODULE_ADD}\""
-    sudo sed -i "s/.*${LINE}.*/${NEW_LINE}/" /etc/default/grub
-fi
-
-echo "Reboot"
-sudo shutdown -r now
-EOF
-    if [ ${useKey} == 0 ]; then
-        echo "Using Password and running target configuration!"
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
+    if [ -z $lbKernelVersion ]; then
+        echo "Skip preparing targets kernel as no specific kernel defined ${ipList}"
     else
-        echo "Using key and running target configuration!"
-        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
+        echo "Preparing targets: ${ipList}"
+
+        sudo yum install -qy wget iptables
+
+        wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
+        wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
+        wget "${lbKernelBaseURL}kernel-${lbKernelVersion}.rpm"
+
+        sudo rpm -i "kernel-core-${lbKernelVersion}.rpm"
+        sudo rpm -i "kernel-modules-${lbKernelVersion}.rpm"
+        sudo rpm -i "kernel-${lbKernelVersion}.rpm"
+
+        sudo grubby --set-default="/boot/vmlinuz-${lbKernelVersion}"
+
+        echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
+
+        sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+
+        sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
+
+        sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+
+        # Enable unsigned kernel modules
+        # Get line
+        LINE=`grep "GRUB_CMDLINE_LINUX" /etc/default/grub`
+        MODULE_ADD="module.sig_enforce=0"
+        # Get entries
+        TRIMMED=`echo \$LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
+        if [[ \${TRIMMED} == *"\${MODULE_ADD}"* ]]; then
+            # Do nothing
+            echo "No change."
+        else
+            # Replace line
+            NEW_LINE="GRUB_CMDLINE_LINUX=\"${TRIMMED} ${MODULE_ADD}\""
+            sudo sed -i "s/.*${LINE}.*/${NEW_LINE}/" /etc/default/grub
+        fi
+
+        echo "Reboot"
+        sudo shutdown -r now
+        EOF
+            if [ ${useKey} == 0 ]; then
+                echo "Using Password and running target configuration > sshpass -p ${password} pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -o StrictHostKeyChecking=false -l root -A -t 900 -i ${targetPrepCommands}"
+                sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
+            else
+                echo "Using key and running target configuration > sudo pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false -t 900 -i ${targetPrepCommands}"
+                sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
+            fi
+
     fi
 }
 
@@ -429,6 +496,14 @@ EOL
     # Create a single server file from input [serverName, serverAddress]
     CreateServerFile()
     {
+        if [ "${noDisks}" -eq 0 ]; then # generic server
+            initialDeviceCount="4"
+            maxDeviceCount="12"
+            echo "[OE] using generic server: initialDeviceCount=${initialDeviceCount} , maxDeviceCount=${maxDeviceCount}"
+        else
+            initialDeviceCount=${noDisks}
+            maxDeviceCount=${noDisks}
+        fi
         serverName=$1
         serverAddress=$2
         fileContent="
@@ -442,8 +517,8 @@ nodes:
     ec_enabled: false
     lightfieldMode: SW_LF
     storageDeviceLayout:
-      initialDeviceCount: ${noDisks}
-      maxDeviceCount: ${noDisks}
+      initialDeviceCount: ${initialDeviceCount}
+      maxDeviceCount: ${maxDeviceCount}
       allowCrossNumaDevices: true
       deviceMatchers:
 #      - model =~ ".*"
@@ -463,6 +538,9 @@ EOL
         CalculateNoDisks()
         {
             case "${node}" in
+                    generic)
+                        noDisks=0
+                        ;;
                     l16s_v3)
                         noDisks=2
                         ;;
@@ -503,7 +581,7 @@ EOL
         }
         CalculateNoDisks
         serverCount=0
-        for host in "${serverIPs[@]}"; do
+        for host in "${serverDataIPs[@]}"; do
             CreateServerFile "server${serverCount}" "${host}"
             serverCount=$((serverCount+1))
         done
@@ -511,6 +589,37 @@ EOL
 
     CreateGroupVars()
     {
+
+        if [ "${node}" == "generic" ]; then # ...do not use chrony
+
+        # Create the all.yml file within the group_vars directory and configure for generic/on-prem
+        tee ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars/all.yml > /dev/null << EOL
+---
+use_lightos_kernel: false
+enable_iptables: false
+persistent_memory: false
+start_discovery_service_retries: 5
+#nvme_subsystem_nqn_suffix: "some_suffix"
+#ntp_enabled: true
+#chrony_enabled: true
+#ntp_manage_config: true
+#ntp_servers:
+#- 169.254.169.123
+#  - "0{{ '.' + ntp_area if ntp_area else '' }}.pool.ntp.org iburst"
+#  - "1{{ '.' + ntp_area if ntp_area else '' }}.pool.ntp.org iburst"
+#  - "2{{ '.' + ntp_area if ntp_area else '' }}.pool.ntp.org iburst"
+#  - "3{{ '.' + ntp_area if ntp_area else '' }}.pool.ntp.org iburst"
+
+#ntp_version: "ntp-4.2.6p5-29.el7.centos.x86_64"
+
+#ntp_packages:
+#    - "autogen-libopts*.rpm"
+#    - "ntpdate*.rpm"
+#    - "ntp*.rpm"
+EOL
+
+        else
+
         # Create the all.yml file within the group_vars directory and configure for cloud
         tee ${CURRENT_DIR}/${clusterName}/ansible/inventories/${clusterName}/group_vars/all.yml > /dev/null << EOL
 ---
@@ -536,6 +645,9 @@ chrony_enabled: true
 #    - "ntpdate*.rpm"
 #    - "ntp*.rpm"
 EOL
+
+    fi
+
     }
 
     EditAnsible()
