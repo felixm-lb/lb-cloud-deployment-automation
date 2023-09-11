@@ -451,14 +451,13 @@ echo "Reboot"
 sudo shutdown -r now
 EOF
     fi
-            if [ ${useKey} == 0 ]; then
-                echo "Using Password and running target configuration > sshpass -p ${password} pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -o StrictHostKeyChecking=false -l root -A -t 900 -i ${targetPrepCommands}"
-                sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
-            else
-                echo "Using key and running target configuration > sudo pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false -t 900 -i ${targetPrepCommands}"
-                sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
-            fi
-
+    
+    if [ ${useKey} == 0 ]; then
+        echo "Using Password and running target configuration > sshpass -p ${password} pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -o StrictHostKeyChecking=false -l root -A -t 900 -i ${targetPrepCommands}"
+        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
+    else
+        echo "Using key and running target configuration > sudo pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false -t 900 -i ${targetPrepCommands}"
+        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
     fi
 }
 
