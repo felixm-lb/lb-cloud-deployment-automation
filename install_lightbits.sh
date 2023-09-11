@@ -10,8 +10,11 @@
 #                    fix docker ansible execution: using 'sudo docker run -i' instead of 'sudo docker run -it"
 #                    TODO: to consider add support for dual nodes data interfaces
 # 08-Aug-2023 [OE]   add jq install also in CheckVersion
+# 11-Sep-2023 [FM]   added support for Lightbits v3.4.1 and therefore userspace
+#                    added support for installing with and to RHEL 9 family OS
 #
-INSTALL_LIGHTBITS_VERSION="V1.02"
+
+INSTALL_LIGHTBITS_VERSION="V1.03"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -397,8 +400,6 @@ PrepTargets()
         echo "Userspace release"
         read -r -d '' targetPrepCommands << EOF
 sudo yum install -qy wget iptables
-
-echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
 
 sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
