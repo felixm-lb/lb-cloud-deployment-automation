@@ -38,6 +38,10 @@ LB_JSON="{\"lbVersions\": [
         \"versionLightApp\": \"light-app-install-environment-v3.3.1~b1335.tgz\",
         \"kernelVersion\": \"4.18.0-477.13.1.el8_8.x86_64\",
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.8/BaseOS/x86_64/os/Packages/\"
+    },
+    {
+        \"versionName\": \"lightos-3-4-1-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.4.1~b1397.tgz\"
     }
 ]}"
 CURRENT_DIR=`pwd`
@@ -56,7 +60,7 @@ DisplayHelp()
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
     k    Path to key.                            /home/root/keys/key.pem
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
-    v    Lightbits Version.                      lightos-3-1-2-rhl-86, lightos-3-2-1-rhl-86, lightos-3-3-1-rhl-8
+    v    Lightbits Version.                      lightos-3-1-2-rhl-86, lightos-3-2-1-rhl-86, lightos-3-3-1-rhl-8, lightos-3-4-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
     d    Data IPs                                optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
 
@@ -385,53 +389,68 @@ CheckConfigure()
 # Prepare the target hosts
 PrepTargets()
 {
-    echo "Check for preparing targets kernel: ${ipList}"
-    lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
-    lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
+    echo "Preparing targets: ${ipList}"
 
-    if [ -z $lbKernelVersion ]; then
-        echo "Skip preparing targets kernel as no specific kernel defined ${ipList}"
-    else
-        echo "Preparing targets: ${ipList}"
+    userspace=`echo ${LB_JSON} | jq -e '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
 
-        sudo yum install -qy wget iptables
+    if [[ ${userspace} -eq null ]]; then # Use a different config for userspace
+        echo "Userspace release"
+        read -r -d '' targetPrepCommands << EOF
+sudo yum install -qy wget iptables
 
-        wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
-        wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
-        wget "${lbKernelBaseURL}kernel-${lbKernelVersion}.rpm"
+echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
 
-        sudo rpm -i "kernel-core-${lbKernelVersion}.rpm"
-        sudo rpm -i "kernel-modules-${lbKernelVersion}.rpm"
-        sudo rpm -i "kernel-${lbKernelVersion}.rpm"
+sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
-        sudo grubby --set-default="/boot/vmlinuz-${lbKernelVersion}"
+sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
 
-        echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
+sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
 
-        sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+EOF
+    else # Install kernel etc.
+        echo "Kernelspace release"
+        lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
+        lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
+        read -r -d '' targetPrepCommands << EOF
+sudo yum install -qy wget iptables
 
-        sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
+wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
+wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
+wget "${lbKernelBaseURL}kernel-${lbKernelVersion}.rpm"
 
-        sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+sudo rpm -i "kernel-core-${lbKernelVersion}.rpm"
+sudo rpm -i "kernel-modules-${lbKernelVersion}.rpm"
+sudo rpm -i "kernel-${lbKernelVersion}.rpm"
 
-        # Enable unsigned kernel modules
-        # Get line
-        LINE=`grep "GRUB_CMDLINE_LINUX" /etc/default/grub`
-        MODULE_ADD="module.sig_enforce=0"
-        # Get entries
-        TRIMMED=`echo \$LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
-        if [[ \${TRIMMED} == *"\${MODULE_ADD}"* ]]; then
-            # Do nothing
-            echo "No change."
-        else
-            # Replace line
-            NEW_LINE="GRUB_CMDLINE_LINUX=\"${TRIMMED} ${MODULE_ADD}\""
-            sudo sed -i "s/.*${LINE}.*/${NEW_LINE}/" /etc/default/grub
-        fi
+sudo grubby --set-default="/boot/vmlinuz-${lbKernelVersion}"
 
-        echo "Reboot"
-        sudo shutdown -r now
-        EOF
+echo 'exclude=redhat-release* kernel* kmod-kvdo*' | sudo tee -a /etc/yum.conf
+
+sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
+
+sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
+
+sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+
+# Enable unsigned kernel modules
+# Get line
+LINE=`grep "GRUB_CMDLINE_LINUX" /etc/default/grub`
+MODULE_ADD="module.sig_enforce=0"
+# Get entries
+TRIMMED=`echo \$LINE | sed -n -e 's/^.*GRUB_CMDLINE_LINUX=//p' | tr -d '\"'`
+if [[ \${TRIMMED} == *"\${MODULE_ADD}"* ]]; then
+    # Do nothing
+    echo "No change."
+else
+    # Replace line
+    NEW_LINE="GRUB_CMDLINE_LINUX=\"${TRIMMED} ${MODULE_ADD}\""
+    sudo sed -i "s/.*${LINE}.*/${NEW_LINE}/" /etc/default/grub
+fi
+
+echo "Reboot"
+sudo shutdown -r now
+EOF
+    fi
             if [ ${useKey} == 0 ]; then
                 echo "Using Password and running target configuration > sshpass -p ${password} pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -o StrictHostKeyChecking=false -l root -A -t 900 -i ${targetPrepCommands}"
                 sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
