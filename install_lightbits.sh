@@ -198,7 +198,7 @@ ConfigureInstaller()
     {
         echo "Installing tools"
         sudo yum install jq -y
-        sudo yum -qy install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        sudo yum -qy install epel-release
         sudo yum install -qy yum-utils pssh sshpass
 
         echo "Add docker repo"
