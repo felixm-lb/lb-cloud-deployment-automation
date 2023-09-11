@@ -404,7 +404,7 @@ sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
 sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
 
-sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/*syslog
 
 EOF
     else # Install kernel etc.
@@ -430,7 +430,7 @@ sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
 sudo sed -i 's/#Storage.*/Storage=persistent/' /etc/systemd/journald.conf
 
-sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/syslog
+sudo sed -i 's|    missingok$|    daily\n    rotate 30\n    compress\n    missingok\n    notifempty|g' /etc/logrotate.d/*syslog
 
 # Enable unsigned kernel modules
 # Get line
