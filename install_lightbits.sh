@@ -16,6 +16,7 @@
 #                    fixed logrotate for Alma
 #                    added i4i.4xlarge to AWS list
 #                    fixed epel-release install in RHEL & Alma by discovering version and OS type = will now fail for Ubuntu install
+#                    added cleanup
 #
 
 INSTALL_LIGHTBITS_VERSION="V1.03"
@@ -68,7 +69,7 @@ DisplayHelp()
    
     Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
     options:                                     example:
-    m    Configure mode.                         configure, install
+    m    Configure mode.                         configure, install, cleanup
     n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.4xlarge, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
     i    List of server IPs.                     \"10.0.0.1,10.0.0.2,10.0.0.3\"
     u    Username.                               root
@@ -90,6 +91,9 @@ DisplayHelp()
     Full Example (generic/pre-allocated-lab-servers, with password):
     ${0##*/} -m configure -n generic -i \"rack99-server01,rack99-server02,rack99-server03\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-3-x-ga -c test-cluster -d \"10.109.11.251,10.109.11.252,10.109.11.253\"
     ${0##*/} -m install -c test-cluster -v lightos-3-3-x-ga
+
+    Full Example - cleanup
+    ${0##*/} -m cleanup -c test-cluster -v lightos-3-5-1-rhl-8
 
     Notes
     For generic server need to provide data ip, only single lb node is created on generic server
@@ -744,14 +748,14 @@ RunAnsibleInstall()
     sudo rm -rf ${CURRENT_DIR}/${clusterName}/lightos-certificates
 
     # Run ansible
-    echo "Run ansible with: docker run -i ..."
+    echo "Run ansible deploy ..."
     sudo docker run -i --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
+        -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
         -w /lb_install \
         docker.lightbitslabs.com/${lbVersion}/lb-ansible:4.2.0 \
         sh -c 'ansible-playbook \
-            -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
             -e system_jwt_path=/lb_install/lightos_jwt \
             -e lightos_default_admin_jwt=/lb_install/lightos_default_admin_jwt \
             -e certificates_directory=/lightos-certificates \
@@ -770,13 +774,45 @@ RunInstall()
     RunAnsibleInstall
 }
 
+RunAnsibleInstall()
+{
+    echo "Do some cleanups..."
+    # Clean up any old certs and JWTs
+    sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_jwt
+    sudo rm -f ${CURRENT_DIR}/${clusterName}/lightos_default_admin_jwt
+    sudo rm -rf ${CURRENT_DIR}/${clusterName}/lightos-certificates
+
+    # Run ansible
+    echo "Run ansible cleanup ..."
+    sudo docker run -i --rm --net=host \
+        -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
+        -v ${CURRENT_DIR}/${clusterName}:/lb_install \
+        -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
+        -w /lb_install \
+        docker.lightbitslabs.com/${lbVersion}/lb-ansible:4.2.0 \
+        sh -c 'ansible-playbook \
+            -i /lb_install/ansible/inventories/"'${clusterName}'"/hosts \
+            /lb_install/playbooks/cleanup-lightos-playbook.yml --tags=cleanup'
+}
+
+RunCleanup()
+{
+    # Run program in install mode
+    echo "#############"
+    echo "Run Install"
+    echo "#############"
+    CheckClusterName
+    CheckVersion
+    RunAnsibleCleanup
+}
+
 # Check program mode
 RunMode()
 {
     # Check that a supported mode has been provided
     CheckMode()
     {
-        modeList=("configure" "install")
+        modeList=("configure" "install" "cleanup)
         containsMode=0
         for modeType in "${modeList[@]}"; do
             if [ "${modeType}" = "${mode}" ]; then
@@ -798,6 +834,9 @@ RunMode()
                 ;;
             install)
                 RunInstall
+                ;;
+            cleanup)
+                RunCleanup
                 ;;
         esac
 }
