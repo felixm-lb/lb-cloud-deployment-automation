@@ -15,7 +15,7 @@
 # 06-Nov-2023 [FM]   added support for Lightbits v3.4.2 and v3.5.1
 #                    fixed logrotate for Alma
 #                    added i4i.4xlarge to AWS list
-#                    fixed epel-release install in RHEL & Alma
+#                    fixed epel-release install in RHEL & Alma by discovering version and OS type = will now fail for Ubuntu install
 #
 
 INSTALL_LIGHTBITS_VERSION="V1.03"
@@ -213,7 +213,7 @@ ConfigureInstaller()
     {
         echo "Installing tools"
         sudo yum install jq -y
-        sudo yum -qy install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+        sudo yum -qy install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm"
         sudo yum install -qy yum-utils pssh sshpass
 
         echo "Add docker repo"
@@ -228,6 +228,22 @@ ConfigureInstaller()
         sudo systemctl enable docker && sudo systemctl start docker
     }
 
+        # Check installer OS and major version
+    CheckInstallerOS()
+    {
+        local ALLOWED_OS="rhel centos alma rocky"
+        echo "Checking installer OS"
+        local OS_TYPE=`cat /etc/os-release | grep -o -P '(?<=^ID=).*' | tr -d '"'`
+        OS_VERSION=`cat /etc/os-release | grep -o -P '(?<=VERSION_ID=).*(?=\.)' | tr -d '"'`
+
+        if [[ "${ALLOWED_OS}" =~ (^|[[:space:]])"${OS_TYPE}"($|[[:space:]]) ]]; then
+            echo "OS is ${OS_TYPE} version ${OS_VERSION}"
+        else
+            echo "OS not supported for install, please use ${ALLOWED_OS}"
+            exit 1
+    }
+
+    CheckInstallerOS
     InstallInstallerSoftware
     MakeWorkingDirectories
     PullInstallerSoftware
