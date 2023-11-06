@@ -618,7 +618,7 @@ EOL
                     i3en.metal)
                         noDisks=8
                         ;;
-                    i4i.8xlarge)
+                    i4i.4xlarge)
                         noDisks=1
                         ;;
                     i4i.8xlarge)
