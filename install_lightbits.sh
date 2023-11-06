@@ -241,6 +241,7 @@ ConfigureInstaller()
         else
             echo "OS not supported for install, please use ${ALLOWED_OS}"
             exit 1
+        fi
     }
 
     CheckInstallerOS
