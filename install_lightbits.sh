@@ -774,7 +774,7 @@ RunInstall()
     RunAnsibleInstall
 }
 
-RunAnsibleInstall()
+RunAnsibleCleanup()
 {
     echo "Do some cleanups..."
     # Clean up any old certs and JWTs
@@ -797,9 +797,9 @@ RunAnsibleInstall()
 
 RunCleanup()
 {
-    # Run program in install mode
+    # Run program in cleanup mode
     echo "#############"
-    echo "Run Install"
+    echo "Run Cleanup"
     echo "#############"
     CheckClusterName
     CheckVersion
