@@ -812,7 +812,7 @@ RunMode()
     # Check that a supported mode has been provided
     CheckMode()
     {
-        modeList=("configure" "install" "cleanup)
+        modeList=("configure" "install" "cleanup")
         containsMode=0
         for modeType in "${modeList[@]}"; do
             if [ "${modeType}" = "${mode}" ]; then
