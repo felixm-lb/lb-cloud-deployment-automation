@@ -14,6 +14,7 @@
 #                    added support for installing with and to RHEL 9 family OS
 # 06-Nov-2023 [FM]   added support for Lightbits v3.4.2 and v3.5.1
 #                    fixed logrotate for Alma
+#                    added i4i.4xlarge to AWS list
 #
 
 INSTALL_LIGHTBITS_VERSION="V1.03"
@@ -67,7 +68,7 @@ DisplayHelp()
     Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
     options:                                     example:
     m    Configure mode.                         configure, install
-    n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
+    n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.4xlarge, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
     i    List of server IPs.                     \"10.0.0.1,10.0.0.2,10.0.0.3\"
     u    Username.                               root
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
@@ -270,7 +271,7 @@ CheckConfigure()
     # Check that the vm type is within the accepted list
     CheckVMType()
     {
-        nodeList=("l16s_v3" "l32s_v3" "l64s_v3" "l80s_v3" "i3en.6xlarge" "i3en.12xlarge" "i3en.24xlarge" "i3en.metal" "i4i.8xlarge" "i4i.16xlarge" "i4i.32xlarge" "i4i.metal" "generic")
+        nodeList=("l16s_v3" "l32s_v3" "l64s_v3" "l80s_v3" "i3en.6xlarge" "i3en.12xlarge" "i3en.24xlarge" "i3en.metal" "i4i.4xlarge" "i4i.8xlarge" "i4i.16xlarge" "i4i.32xlarge" "i4i.metal" "generic")
         containsNode=0
         for nodeType in "${nodeList[@]}"; do
             if [ "${nodeType}" = "${node}" ]; then
@@ -598,6 +599,9 @@ EOL
                         ;;
                     i3en.metal)
                         noDisks=8
+                        ;;
+                    i4i.8xlarge)
+                        noDisks=1
                         ;;
                     i4i.8xlarge)
                         noDisks=2
