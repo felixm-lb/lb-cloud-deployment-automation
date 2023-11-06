@@ -12,6 +12,8 @@
 # 08-Aug-2023 [OE]   add jq install also in CheckVersion
 # 11-Sep-2023 [FM]   added support for Lightbits v3.4.1 and therefore userspace
 #                    added support for installing with and to RHEL 9 family OS
+# 06-Nov-2023 [FM]   added support for Lightbits v3.4.2 and v3.5.1
+#                    fixed logrotate for Alma
 #
 
 INSTALL_LIGHTBITS_VERSION="V1.03"
@@ -45,6 +47,14 @@ LB_JSON="{\"lbVersions\": [
     {
         \"versionName\": \"lightos-3-4-1-rhl-8\",
         \"versionLightApp\": \"light-app-install-environment-v3.4.1~b1397.tgz\"
+    },
+    {
+        \"versionName\": \"lightos-3-4-2-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.4.2~b1423.tgz\"
+    },
+    {
+        \"versionName\": \"lightos-3-5-1-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.5.1~b1443.tgz\"
     }
 ]}"
 CURRENT_DIR=`pwd`
@@ -63,17 +73,17 @@ DisplayHelp()
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
     k    Path to key.                            /home/root/keys/key.pem
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
-    v    Lightbits Version.                      lightos-3-1-2-rhl-86, lightos-3-2-1-rhl-86, lightos-3-3-1-rhl-8, lightos-3-4-1-rhl-8
+    v    Lightbits Version.                      lightos-3-3-1-rhl-8, lightos-3-4-1-rhl-8, lightos-3-4-2-rhl-8, lightos-3-5-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
     d    Data IPs                                optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
 
     Full Example (Azure with password):
-    ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install -c test-cluster -v lightos-3-2-1-rhl-86
+    ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-5-1-rhl-8 -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-5-1-rhl-8
 
     Full Example (AWS with keys):
-    ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-2-1-rhl-86 -c test-cluster
-    ${0##*/} -m install -c test-cluster -v lightos-3-2-1-rhl-86
+    ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-5-1-rhl-8 -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-5-1-rhl-8
 
     Full Example (generic/pre-allocated-lab-servers, with password):
     ${0##*/} -m configure -n generic -i \"rack99-server01,rack99-server02,rack99-server03\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-3-x-ga -c test-cluster -d \"10.109.11.251,10.109.11.252,10.109.11.253\"
@@ -399,7 +409,7 @@ PrepTargets()
     if [[ ${userspace} -eq null ]]; then # Use a different config for userspace
         echo "Userspace release"
         read -r -d '' targetPrepCommands << EOF
-sudo yum install -qy wget iptables
+sudo yum install -qy wget iptables logrotate
 
 sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
