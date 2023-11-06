@@ -15,6 +15,7 @@
 # 06-Nov-2023 [FM]   added support for Lightbits v3.4.2 and v3.5.1
 #                    fixed logrotate for Alma
 #                    added i4i.4xlarge to AWS list
+#                    fixed epel-release install in RHEL & Alma
 #
 
 INSTALL_LIGHTBITS_VERSION="V1.03"
@@ -212,7 +213,7 @@ ConfigureInstaller()
     {
         echo "Installing tools"
         sudo yum install jq -y
-        sudo yum -qy install epel-release
+        sudo yum -qy install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
         sudo yum install -qy yum-utils pssh sshpass
 
         echo "Add docker repo"
