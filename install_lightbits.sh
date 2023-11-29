@@ -17,9 +17,10 @@
 #                    added i4i.4xlarge to AWS list
 #                    fixed epel-release install in RHEL & Alma by discovering version and OS type = will now fail for Ubuntu install
 #                    added cleanup
+# 29-Nov-2023 [FM]   added support for installing from almalinux v8
 #
 
-INSTALL_LIGHTBITS_VERSION="V1.03"
+INSTALL_LIGHTBITS_VERSION="V1.04"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -235,7 +236,7 @@ ConfigureInstaller()
         # Check installer OS and major version
     CheckInstallerOS()
     {
-        local ALLOWED_OS="rhel centos alma rocky"
+        local ALLOWED_OS="rhel centos alma almalinux rocky"
         echo "Checking installer OS"
         local OS_TYPE=`cat /etc/os-release | grep -o -P '(?<=^ID=).*' | tr -d '"'`
         OS_VERSION=`cat /etc/os-release | grep -o -P '(?<=VERSION_ID=).*(?=\.)' | tr -d '"'`
