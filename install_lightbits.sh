@@ -70,7 +70,7 @@ DisplayHelp()
    
     Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
     options:                                     example:
-    m    Configure mode.                         configure, install, cleanup
+    m    Configure mode.                         configure, install, cleanup, add-node-configure, add-node-install
     n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.4xlarge, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
     i    List of server IPs.                     \"10.0.0.1,10.0.0.2,10.0.0.3\"
     u    Username.                               root
@@ -95,6 +95,10 @@ DisplayHelp()
 
     Full Example - cleanup
     ${0##*/} -m cleanup -c test-cluster -v lightos-3-5-1-rhl-8
+
+    Full Example - add node (generic/pre-allocated-lab-servers, with password):
+    ${0##*/} -m add-node-configure -n generic -i \"rack99-server04\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-3-x-ga -c test-cluster -d \"10.109.11.250\"
+    ${0##*/} -m add-node-install -i \"rack99-server04\" -c test-cluster -v lightos-3-3-x-ga
 
     Notes
     For generic server need to provide data ip, only single lb node is created on generic server
