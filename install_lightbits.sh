@@ -59,6 +59,10 @@ LB_JSON="{\"lbVersions\": [
     {
         \"versionName\": \"lightos-3-5-1-rhl-8\",
         \"versionLightApp\": \"light-app-install-environment-v3.5.1~b1443.tgz\"
+    },
+    {
+        \"versionName\": \"lightos-3-6-1-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.6.1~b1503.tgz\"
     }
 ]}"
 CURRENT_DIR=`pwd`
