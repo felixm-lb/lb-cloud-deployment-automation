@@ -18,7 +18,7 @@
 #                    fixed epel-release install in RHEL & Alma by discovering version and OS type = will now fail for Ubuntu install
 #                    added cleanup
 # 29-Nov-2023 [FM]   added support for installing from almalinux v8
-#
+# 01-Feb-2024 [KK]   added support for Lightbits v3.6.1
 
 INSTALL_LIGHTBITS_VERSION="V1.04"
 
