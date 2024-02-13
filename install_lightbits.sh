@@ -19,6 +19,7 @@
 #                    added cleanup
 # 29-Nov-2023 [FM]   added support for installing from almalinux v8
 # 01-Feb-2024 [KK]   added support for Lightbits v3.6.1
+# 02-Feb-2024 [FM]   fixed issue where gpg check failed when installing docker due to centos docker repo being used
 
 INSTALL_LIGHTBITS_VERSION="V1.04"
 
