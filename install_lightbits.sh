@@ -19,6 +19,7 @@
 #                    added cleanup
 # 29-Nov-2023 [FM]   added support for installing from almalinux v8
 # 01-Feb-2024 [KK]   added support for Lightbits v3.6.1
+# 02-Feb-2024 [FM]   fixed issue where gpg check failed when installing docker due to centos docker repo being used
 
 INSTALL_LIGHTBITS_VERSION="V1.04"
 
@@ -231,7 +232,7 @@ ConfigureInstaller()
             https://download.docker.com/linux/centos/docker-ce.repo
 
         echo "Install docker"
-        sudo yum install -qy docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        sudo yum install -qy --nogpgcheck docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
         echo "Enable and start docker service"
         sudo systemctl enable docker && sudo systemctl start docker
