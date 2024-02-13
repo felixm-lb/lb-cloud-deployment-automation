@@ -231,7 +231,7 @@ ConfigureInstaller()
             https://download.docker.com/linux/centos/docker-ce.repo
 
         echo "Install docker"
-        sudo yum install -qy docker-ce docker-ce-cli containerd.io docker-compose-plugin
+        sudo yum install -qy --nogpgcheck docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
         echo "Enable and start docker service"
         sudo systemctl enable docker && sudo systemctl start docker
