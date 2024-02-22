@@ -21,7 +21,7 @@
 # 01-Feb-2024 [KK]   added support for Lightbits v3.6.1
 # 02-Feb-2024 [FM]   fixed issue where gpg check failed when installing docker due to centos docker repo being used
 # 22-Feb-2024 [FM]   added support for Lightbits v3.7.1 with new container installer
-#                    added support for installer to be Ubuntu
+#                    added support for installer to be on Ubuntu OS
 
 INSTALL_LIGHTBITS_VERSION="V1.09"
 
