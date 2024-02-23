@@ -1,3 +1,4 @@
+```
          _     _       _     _   _     _ _       
         | |   (_) __ _| |__ | |_| |__ (_) |_ ___ 
         | |   | |/ _` | '_ \| __| '_ \| | __/ __|
@@ -37,6 +38,7 @@
              *********+=====    ====###            
                 *******+===                        
                       **=  
+```
 
 # lb-cloud-deployment-automation
 A script to automate the 'manual' configuration and deployment of Lightbits in the cloud.
