@@ -685,10 +685,17 @@ EOL
         }
         CalculateNoDisks
         serverCount=0
-        for host in "${serverDataIPs[@]}"; do
-            CreateServerFile "server${serverCount}" "${host}"
-            serverCount=$((serverCount+1))
-        done
+        if [[ -z "${dataIps}" ]]; then # Use management IPs in host file
+            for host in "${serverIPs[@]}"; do
+                CreateServerFile "server${serverCount}" "${host}"
+                serverCount=$((serverCount+1))
+            done
+        else # Use provided data IPs
+            for host in "${serverDataIPs[@]}"; do
+                CreateServerFile "server${serverCount}" "${host}"
+                serverCount=$((serverCount+1))
+            done
+        fi
     }
 
     CreateGroupVars()
