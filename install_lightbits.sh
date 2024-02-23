@@ -20,50 +20,69 @@
 # 29-Nov-2023 [FM]   added support for installing from almalinux v8
 # 01-Feb-2024 [KK]   added support for Lightbits v3.6.1
 # 02-Feb-2024 [FM]   fixed issue where gpg check failed when installing docker due to centos docker repo being used
+# 22-Feb-2024 [FM]   added support for Lightbits v3.7.1 with new container installer
+#                    added support for installer to be on Ubuntu OS
+#                    added force flag for smaller or larger clusters
+#                    added software check before running mode
+#                    added check so that count for data and management IPs match
+#                    added logo and -s flag to silence logo
 
-INSTALL_LIGHTBITS_VERSION="V1.04"
+INSTALL_LIGHTBITS_VERSION="V1.09"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
     {
         \"versionName\": \"lightos-3-3-x-ga\",
         \"versionLightApp\": \"light-app-install-environment-v3.3.1~b1334.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\",
         \"kernelVersion\": \"\",
         \"kernelLinkBase\": \"\"
     },
     {
         \"versionName\": \"lightos-3-1-2-rhl-86\",
         \"versionLightApp\": \"light-app-install-environment-v3.1.2~b1127.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\",
         \"kernelVersion\": \"4.18.0-425.3.1.el8.x86_64\",
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8/BaseOS/x86_64/os/Packages/\"
     },
     {
         \"versionName\": \"lightos-3-2-1-rhl-86\",
         \"versionLightApp\": \"light-app-install-environment-v3.2.1~b1252.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\",
         \"kernelVersion\": \"4.18.0-425.19.2.el8_7.x86_64\",
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.7/BaseOS/x86_64/os/Packages/\"
     },
     {
         \"versionName\": \"lightos-3-3-1-rhl-8\",
         \"versionLightApp\": \"light-app-install-environment-v3.3.1~b1335.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\",
         \"kernelVersion\": \"4.18.0-477.13.1.el8_8.x86_64\",
         \"kernelLinkBase\": \"https://repo.almalinux.org/almalinux/8.8/BaseOS/x86_64/os/Packages/\"
     },
     {
         \"versionName\": \"lightos-3-4-1-rhl-8\",
-        \"versionLightApp\": \"light-app-install-environment-v3.4.1~b1397.tgz\"
+        \"versionLightApp\": \"light-app-install-environment-v3.4.1~b1397.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\"
     },
     {
         \"versionName\": \"lightos-3-4-2-rhl-8\",
-        \"versionLightApp\": \"light-app-install-environment-v3.4.2~b1423.tgz\"
+        \"versionLightApp\": \"light-app-install-environment-v3.4.2~b1423.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\"
     },
     {
         \"versionName\": \"lightos-3-5-1-rhl-8\",
-        \"versionLightApp\": \"light-app-install-environment-v3.5.1~b1443.tgz\"
+        \"versionLightApp\": \"light-app-install-environment-v3.5.1~b1443.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\"
     },
     {
         \"versionName\": \"lightos-3-6-1-rhl-8\",
-        \"versionLightApp\": \"light-app-install-environment-v3.6.1~b1503.tgz\"
+        \"versionLightApp\": \"light-app-install-environment-v3.6.1~b1503.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:4.2.0\"
+    },
+    {
+        \"versionName\": \"lightos-3-7-1-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.7.1~b1548.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
     }
 ]}"
 CURRENT_DIR=`pwd`
@@ -71,40 +90,41 @@ CURRENT_DIR=`pwd`
 # Display help menu
 DisplayHelp()
 {
-    echo "This script will configure the installation and install Lightbits on VMs in the cloud or generic server. $INSTALL_LIGHTBITS_VERSION
+    echo "This script will configure the installation and install Lightbits on VMs in the cloud or generic server. Script version: $INSTALL_LIGHTBITS_VERSION
    
-    Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c]
+    Syntax: ${0##*/} [-m|n|i|u|p|k|t|v|c|d|f|s]
     options:                                     example:
-    m    Configure mode.                         configure, install, cleanup
+    m    Mode.                                   configure, install, cleanup
     n    Node type.                              l16s_v3, l32s_v3, l64s_v3, l80s_v3, i3en.6xlarge, i3en.12xlarge, i3en.24xlarge, i3en.metal, i4i.4xlarge, i4i.8xlarge, i4i.16xlarge, i4i.32xlarge, i4i.metal, generic
     i    List of server IPs.                     \"10.0.0.1,10.0.0.2,10.0.0.3\"
     u    Username.                               root
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
     k    Path to key.                            /home/root/keys/key.pem
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
-    v    Lightbits Version.                      lightos-3-3-1-rhl-8, lightos-3-4-1-rhl-8, lightos-3-4-2-rhl-8, lightos-3-5-1-rhl-8
+    v    Lightbits Version.                      lightos-3-5-1-rhl-8, lightos-3-6-1-rhl-8, lightos-3-7-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
-    d    Data IPs                                optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
+    d    Data IPs.                               optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
+    f    Force.                                  used for forcing smaller or larger cluster sizes
+    s    Silent.                                 used to ignore logo output
 
     Full Example (Azure with password):
-    ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-5-1-rhl-8 -c test-cluster
-    ${0##*/} -m install -c test-cluster -v lightos-3-5-1-rhl-8
+    ${0##*/} -m configure -n l16s_v3 -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-7-1-rhl-8 -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-7-1-rhl-8
 
     Full Example (AWS with keys):
-    ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-5-1-rhl-8 -c test-cluster
-    ${0##*/} -m install -c test-cluster -v lightos-3-5-1-rhl-8
+    ${0##*/} -m configure -n i3en.6xlarge -i \"10.0.0.1,10.0.0.2,10.0.0.3\" -u ec2-user -k /home/ec2-user/key.pem -t QWCEWVDASADSSsSD -v lightos-3-7-1-rhl-8 -c test-cluster
+    ${0##*/} -m install -c test-cluster -v lightos-3-7-1-rhl-8
 
     Full Example (generic/pre-allocated-lab-servers, with password):
-    ${0##*/} -m configure -n generic -i \"rack99-server01,rack99-server02,rack99-server03\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-3-x-ga -c test-cluster -d \"10.109.11.251,10.109.11.252,10.109.11.253\"
-    ${0##*/} -m install -c test-cluster -v lightos-3-3-x-ga
+    ${0##*/} -m configure -n generic -i \"rack99-server01,rack99-server02,rack99-server03\" -u azureuser -p \'password\' -t QWCEWVDASADSSsSD -v lightos-3-7-1-rhl-8 -c test-cluster -d \"10.109.11.251,10.109.11.252,10.109.11.253\"
+    ${0##*/} -m install -c test-cluster -v lightos-3-7-1-rhl-8
 
     Full Example - cleanup
-    ${0##*/} -m cleanup -c test-cluster -v lightos-3-5-1-rhl-8
+    ${0##*/} -m cleanup -c test-cluster -v lightos-3-7-1-rhl-8
 
     Notes
-    For generic server need to provide data ip, only single lb node is created on generic server
+    For generic server you must provide a data ip
 "
-
 }
 
 # Get entered options and set them as variables
@@ -112,7 +132,7 @@ SetOptions()
 {
     # Get and set the options
     local OPTIND
-    while getopts ":h:m:n:i:u:p:k:t:v:c:d:" option; do
+    while getopts ":h:m:n:i:u:p:k:t:v:c:d:o:sf" option; do # f has no colon so it doesn't accept parameters
         case "${option}" in
             h)
                 DisplayHelp
@@ -147,6 +167,12 @@ SetOptions()
             d)
                 dataIPs="$OPTARG"
                 ;;
+            s)
+                silent=true
+                ;;
+            f)
+                force=true
+                ;;
             :)
                 if [ "${OPTARG}" != "h" ]; then
                     printf "missing argument for -%s\n" "$OPTARG" >&2
@@ -162,22 +188,57 @@ SetOptions()
         esac
     done
     shift $((OPTIND-1))
-
-
-    if [ -z "${dataIPs}" ]; then # not provided data ips?
-        if [ "${node}" == "generic" ]; then # for generic server must provide dataIPs
-            echo "missing dataIPs, must provide dataIPs (-d) for generic servers"
-            DisplayHelp
-            exit 1
-        else # cloud servers, use same data ips as managment ips (ipList)
-            dataIPs=${ipList}
-        fi
-    fi
 }
 
 # Configures the installer instance
 ConfigureInstaller()
 {
+    # Install Docker
+    InstallDocker()
+    {
+        # Install packages with apt
+        InstallDockerForUbuntu()
+        {
+            echo "Add docker repo"
+            # Add Docker's official GPG key:
+            sudo install -m 0755 -d /etc/apt/keyrings
+            sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+            sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+            # Add the repository to Apt sources:
+            echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+            sudo apt-get -qy update
+
+            sudo apt-get -qy install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+        }
+
+        # Install packages with yum
+        InstallDockerForEL()
+        {
+            echo "Add docker repo"
+            sudo yum-config-manager \
+                --add-repo \
+                https://download.docker.com/linux/centos/docker-ce.repo
+
+            echo "Install docker"
+            sudo yum install -qy --nogpgcheck docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+            echo "Enable and start docker service"
+            sudo systemctl enable docker && sudo systemctl start docker
+        }
+
+        echo "Installing docker"
+        echo "Installing docker for ${OS_TYPE} v.${OS_VERSION}"
+        if [[ "${OS_TYPE}" == "ubuntu" ]]; then
+            InstallDockerForUbuntu
+        else
+            InstallDockerForEL
+        fi
+    }
+
     # Create clients file for pssh to use
     CreatePsshClientFile()
     {
@@ -198,10 +259,7 @@ ConfigureInstaller()
         sudo docker login docker.lightbitslabs.com -u "${lbVersion}" -p "${repoToken}"
 
         echo "Pulling docker image"
-        sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/lb-ansible:4.2.0
-
-        echo "Installing wget"
-        sudo yum install -qy wget
+        sudo docker pull docker.lightbitslabs.com/"${lbVersion}"/"${versionLbAnsible}"
 
         echo "Pull install tarball"
         wget 'https://dl.lightbitslabs.com/'${repoToken}'/'${lbVersion}'/raw/files/'${LB_BUILD}'?accept_eula=1' -O "${CURRENT_DIR}/${clusterName}/${LB_BUILD}"
@@ -218,44 +276,7 @@ ConfigureInstaller()
         mkdir -p "${CURRENT_DIR}/${clusterName}/lightos-certificates"
     }
 
-    # Installs prerequisite software on the installer
-    InstallInstallerSoftware()
-    {
-        echo "Installing tools"
-        sudo yum install jq -y
-        sudo yum -qy install "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm"
-        sudo yum install -qy yum-utils pssh sshpass
-
-        echo "Add docker repo"
-        sudo yum-config-manager \
-            --add-repo \
-            https://download.docker.com/linux/centos/docker-ce.repo
-
-        echo "Install docker"
-        sudo yum install -qy --nogpgcheck docker-ce docker-ce-cli containerd.io docker-compose-plugin
-
-        echo "Enable and start docker service"
-        sudo systemctl enable docker && sudo systemctl start docker
-    }
-
-        # Check installer OS and major version
-    CheckInstallerOS()
-    {
-        local ALLOWED_OS="rhel centos alma almalinux rocky"
-        echo "Checking installer OS"
-        local OS_TYPE=`cat /etc/os-release | grep -o -P '(?<=^ID=).*' | tr -d '"'`
-        OS_VERSION=`cat /etc/os-release | grep -o -P '(?<=VERSION_ID=).*(?=\.)' | tr -d '"'`
-
-        if [[ "${ALLOWED_OS}" =~ (^|[[:space:]])"${OS_TYPE}"($|[[:space:]]) ]]; then
-            echo "OS is ${OS_TYPE} version ${OS_VERSION}"
-        else
-            echo "OS not supported for install, please use ${ALLOWED_OS}"
-            exit 1
-        fi
-    }
-
-    CheckInstallerOS
-    InstallInstallerSoftware
+    InstallDocker
     MakeWorkingDirectories
     PullInstallerSoftware
     CreatePsshClientFile
@@ -275,7 +296,6 @@ CheckClusterName()
 CheckVersion()
 {
     echo "Check version..."
-    sudo yum install jq -y
     versionList=(`echo ${LB_JSON} | jq -r '.lbVersions[].versionName'`)
     containsVersion=0
     for versionId in "${versionList[@]}"; do
@@ -368,8 +388,8 @@ CheckConfigure()
         fi
     }
 
-    # Parse server ips into array
-    ParseServerIPs()
+    # Parse server management ips into array and run checks
+    ParseServerManagementIPs()
     {
         # Check contains values
         if [ -z "${ipList}" ]; then
@@ -380,41 +400,54 @@ CheckConfigure()
 
         # Convert string into array
         serverIPs=($(echo "${ipList}" | tr ',' '\n'))
-        # Check min 3 nodes
-        if [[ "${#serverIPs[@]}" -lt 3 ]]; then
+        # Check min 3 management addresses overridden with -f flag
+        if [[ "${#serverIPs[@]}" -lt 3 ]] && [[ -z "${force}" ]]; then
             echo "Minimum 3 nodes required, ${#serverIPs[@]} provided: ${ipList}"
             exit 1
         fi
         # Check no duplicate IPs provided
         uniqueNum=$(printf '%s\n' "${serverIPs[@]}"|awk '!($0 in seen){seen[$0];c++} END {print c}')
         if [[ "${uniqueNum}" != "${#serverIPs[@]}" ]]; then
-            echo "Duplicate values found in ${ipList}, please remove them!"
+            echo "Duplicate values found in management addresses: ${ipList}, please remove them!"
             exit 1
         fi
 
-        # Check max 16 nodes ...[OE] i removed to allow larger installations
-        #if [[ "${#serverIPs[@]}" -gt 16 ]]; then
-        #    echo "Maximum 16 nodes required, ${#serverIPs[@]} provided: ${ipList}"
-        #    exit 1
-        #fi
+        # Check max 16 nodes overridden with -f flag
+        if [[ "${#serverIPs[@]}" -gt 16 ]] && [[ -z "${force}" ]]; then
+           echo "Maximum 16 nodes required, ${#serverIPs[@]} provided: ${ipList}"
+           exit 1
+        fi
+    }
 
+    # Parse server management ips into array and run checks
+    ParseServerDataIPs()
+    {
         if [ -z "${dataIPs}" ]; then
-            echo "No Server data IPs found!"
+            echo "No Server data IPs found and you're using generic!"
             DisplayHelp
             exit 1
         fi
 
         # Convert string into array
         serverDataIPs=($(echo "${dataIPs}" | tr ',' '\n'))
-        # Check min 3 nodes
-        if [[ "${#serverDataIPs[@]}" -lt 3 ]]; then
+        # Check min 3 data addresses overridden with -f flag
+        if [[ "${#serverDataIPs[@]}" -lt 3 ]] && [[ -z "${force}" ]]; then
             echo "Minimum 3 nodes data ip required, ${#serverDataIPs[@]} provided: ${dataIPs}"
             exit 1
         fi
         # Check no duplicate IPs provided
         uniqueNum=$(printf '%s\n' "${serverDataIPs[@]}"|awk '!($0 in seen){seen[$0];c++} END {print c}')
         if [[ "${uniqueNum}" != "${#serverDataIPs[@]}" ]]; then
-            echo "Duplicate values found in ${dataIPs}, please remove them!"
+            echo "Duplicate values found in data addresses: ${dataIPs}, please remove them!"
+            exit 1
+        fi
+    }
+
+    # Check that there are an equal amount of data and management IPs
+    CheckNumberOfManagementAndDataIPs()
+    {
+        if [[ "${#serverIPs[@]}" != "${#serverDataIPs[@]}" ]]; then
+            echo "The number of management IPs and data IPs isn't equal - today the tool only supports single IP targets!"
             exit 1
         fi
     }
@@ -425,7 +458,11 @@ CheckConfigure()
     CheckUsername
     CheckToken
     CheckVersion
-    ParseServerIPs
+    ParseServerManagementIPs
+    if [[ "${node}" == "generic" ]]; then
+        ParseServerDataIPs
+        CheckNumberOfManagementAndDataIPs
+    fi
 }
 
 # Prepare the target hosts
@@ -438,7 +475,7 @@ PrepTargets()
     if [[ ${userspace} -eq null ]]; then # Use a different config for userspace
         echo "Userspace release"
         read -r -d '' targetPrepCommands << EOF
-sudo yum install -qy wget iptables logrotate
+sudo yum install -qy wget iptables logrotate python3 network-scripts yum-utils net-tools
 
 sudo sed -i 's/^SELINUX=.*$/SELINUX=disabled/' /etc/selinux/config
 
@@ -452,7 +489,7 @@ EOF
         lbKernelBaseURL=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelLinkBase'`
         lbKernelVersion=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .kernelVersion'`
         read -r -d '' targetPrepCommands << EOF
-sudo yum install -qy wget iptables
+sudo yum install -qy wget iptables python3 network-scripts yum-utils net-tools
 
 wget "${lbKernelBaseURL}kernel-core-${lbKernelVersion}.rpm"
 wget "${lbKernelBaseURL}kernel-modules-${lbKernelVersion}.rpm"
@@ -718,12 +755,17 @@ EOL
 
     EditAnsible()
     {
-        # Edit the generate_configuration_files.yml file to trick ansible into treating an Azure VM like a bare metal machine
-        sudo sed -i "s/datapath_config_folder: 'virtual-datapath-templates'/datapath_config_folder: 'physical-datapath-templates'/" ${CURRENT_DIR}/${clusterName}/roles/install-lightos/tasks/generate_configuration_files.yml
+        if [ "${node}" == "generic" ]; then
+            echo "Baremetal Node, no ansible changes"
+        else
+            echo "Cloud Node, change ansible to virtual templates & use min 1 replica"
+            # Edit the generate_configuration_files.yml file to trick ansible into treating an Azure VM like a bare metal machine
+            sudo sed -i "s/datapath_config_folder: 'virtual-datapath-templates'/datapath_config_folder: 'physical-datapath-templates'/" ${CURRENT_DIR}/${clusterName}/roles/install-lightos/tasks/generate_configuration_files.yml
 
-        # Edit the jinja files to set min_replica to 1
-        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/cluster-manager.yaml.j2
-        sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/api-service.yaml.j2
+            # Edit the jinja files to set min_replica to 1
+            sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/cluster-manager.yaml.j2
+            sudo sed -i 's/^minReplicasCount: {{ 1 if use_pmem else 2 }}*$/minReplicasCount: 1/' ${CURRENT_DIR}/${clusterName}/roles/install-lightos/templates/management-templates/api-service.yaml.j2
+        fi
     }
 
     CreateAnsibleDirectories
@@ -755,17 +797,24 @@ RunAnsibleInstall()
 
     # Run ansible
     echo "Run ansible deploy ..."
+    # Set user
+    CURRENT_USER=`echo $USER`
+    CURRENT_UID=`id -u`
+    CURRENT_GID=`id -g`
     sudo docker run -i --rm --net=host \
         -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
         -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
+        -e UID=${CURRENT_UID} \
+        -e GID=${CURRENT_GID} \
+        -e UNAME=${CURRENT_USER} \
         -w /lb_install \
-        docker.lightbitslabs.com/${lbVersion}/lb-ansible:4.2.0 \
+        docker.lightbitslabs.com/${lbVersion}/${versionLbAnsible} \
         sh -c 'ansible-playbook \
             -e system_jwt_path=/lb_install/lightos_jwt \
             -e lightos_default_admin_jwt=/lb_install/lightos_default_admin_jwt \
             -e certificates_directory=/lightos-certificates \
-            -i /lb_install/ansible/inventories/"'${clusterName}'"/hosts \
+            -i /lb_install/ansible/inventories/'${clusterName}'/hosts \
             /lb_install/playbooks/deploy-lightos.yml -vvv'
 }
 
@@ -790,14 +839,20 @@ RunAnsibleCleanup()
 
     # Run ansible
     echo "Run ansible cleanup ..."
+    # Set user
+    CURRENT_USER=`echo $USER`
+    CURRENT_UID=`id -u`
+    CURRENT_GID=`id -g`
     sudo docker run -i --rm --net=host \
-        -v ${CURRENT_DIR}/${clusterName}/lightos-certificates:/lightos-certificates \
         -v ${CURRENT_DIR}/${clusterName}:/lb_install \
         -e ANSIBLE_LOG_PATH=/lb_install/ansible.log \
+        -e UID=${CURRENT_UID} \
+        -e GID=${CURRENT_GID} \
+        -e UNAME=${CURRENT_USER} \
         -w /lb_install \
-        docker.lightbitslabs.com/${lbVersion}/lb-ansible:4.2.0 \
+        docker.lightbitslabs.com/${lbVersion}/${versionLbAnsible} \
         sh -c 'ansible-playbook \
-            -i /lb_install/ansible/inventories/"'${clusterName}'"/hosts \
+            -i /lb_install/ansible/inventories/'${clusterName}'/hosts \
             /lb_install/playbooks/cleanup-lightos-playbook.yml --tags=cleanup'
 }
 
@@ -810,6 +865,61 @@ RunCleanup()
     CheckClusterName
     CheckVersion
     RunAnsibleCleanup
+}
+
+# Run/Install program pre-checks
+RunPrecheck()
+{
+    # Installs prerequisite software on the installer
+    InstallInstallerSoftware()
+    {
+        # Install packages with apt
+        InstallForUbuntu()
+        {
+            echo "Installing using apt"
+            sudo apt-get -qq update
+            sudo apt-get -qq install pssh sshpass jq ca-certificates curl wget
+            # Set pssh as alias for parallel-ssh
+            alias pssh="parallel-ssh"
+        }
+
+        # Install packages with yum
+        InstallForEL()
+        {
+            echo "Installing using yum"
+            sudo yum install -qy yum-utils pssh sshpass jq wget "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm"
+        }
+
+        echo "Installing tools"
+        echo "Installing for ${OS_TYPE} v.${OS_VERSION}"
+        if [[ "${OS_TYPE}" == "ubuntu" ]]; then
+            InstallForUbuntu
+        else
+            InstallForEL
+        fi
+
+        # Set lbAnsible Version
+        versionLbAnsible=`echo ${LB_JSON} | jq -r '.lbVersions[] | select(.versionName == "'${lbVersion}'") | .versionLbAnsible'`
+    }
+
+    # Check installer OS and major version
+    CheckInstallerOS()
+    {
+        local ALLOWED_OS="rhel centos alma almalinux rocky ubuntu"
+        echo "Checking installer OS"
+        OS_TYPE=`cat /etc/os-release | grep -o -P '(?<=^ID=).*' | tr -d '"'`
+        OS_VERSION=`cat /etc/os-release | grep -o -P '(?<=VERSION_ID=).*(?=\.)' | tr -d '"'`
+
+        if [[ "${ALLOWED_OS}" =~ (^|[[:space:]])"${OS_TYPE}"($|[[:space:]]) ]]; then
+            echo "OS is ${OS_TYPE} version ${OS_VERSION}"
+        else
+            echo "OS not supported for install, please use ${ALLOWED_OS}"
+            exit 1
+        fi
+    }
+
+    CheckInstallerOS
+    InstallInstallerSoftware
 }
 
 # Check program mode
@@ -847,10 +957,59 @@ RunMode()
         esac
 }
 
+EchoLogo()
+{
+    if [[ -z "${silent}" ]]; then
+    cat <<'END_LOGO'
+         _     _       _     _   _     _ _       
+        | |   (_) __ _| |__ | |_| |__ (_) |_ ___ 
+        | |   | |/ _` | '_ \| __| '_ \| | __/ __|
+        | |___| | (_| | | | | |_| |_) | | |_\__ \
+        |_____|_|\__, |_| |_|\__|_.__/|_|\__|___/
+         ___     |___/ _        _ _              
+        |_ _|_ __  ___| |_ __ _| | | ___ _ __    
+         | ||  _ \/ __| __/ _` | | |/ _ \  __|   
+         | || | | \__ \ || (_| | | |  __/ |      
+        |___|_| |_|___/\__\__,_|_|_|\___|_|        
+
+                             ==+**                  
+                ######*==  ====+*****              
+            #########+===  =====+*******           
+          ##########====== ======*********         
+        ###########+====== ======####*******       
+      #############===---- ======*######*****      
+     #*###********+------- ------*########****     
+     ============--------- ------*########*****    
+       ========--------:::  -----##########*****   
+   ===     ===-------:::::: :::::--------=====+**  
+ #*=======      ----:::::      ::::-------=======  
+ ***==========      :::          :::-------=====   
+ *****=========----               :::------=       
+ ********+====-----:::                             
+ ******#######+==-::::            ::::----=======++
+ ******################          ::::----======*##*
+ ******###############+..       ::::----==+*###### 
+  ******##############-::..:::  ::---############# 
+  ******##############::::::::  -----*############ 
+   ******############*-::::::   ---==+###########  
+    *******##########+-------   =====+##########   
+     *******#########+-------   =====+#########    
+       ********######*=======   =====*#######      
+        ************#*=======   =====#######       
+           ***********======    =====####          
+             *********+=====    ====###            
+                *******+===                        
+                      **=                          
+END_LOGO
+    fi
+}
+
 #Run the program in order
 Run()
 {
     SetOptions "$@"
+    EchoLogo
+    RunPrecheck
     RunMode
 }
 
