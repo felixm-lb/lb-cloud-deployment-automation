@@ -26,8 +26,9 @@
 #                    added software check before running mode
 #                    added check so that count for data and management IPs match
 #                    added logo and -s flag to silence logo
+# 23-Feb-2024 [FM]   fixed issue with epel installation
 
-INSTALL_LIGHTBITS_VERSION="V1.09"
+INSTALL_LIGHTBITS_VERSION="V1.10"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -887,7 +888,8 @@ RunPrecheck()
         InstallForEL()
         {
             echo "Installing using yum"
-            sudo yum install -qy yum-utils pssh sshpass jq wget "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm"
+            sudo yum install -qy "https://dl.fedoraproject.org/pub/epel/epel-release-latest-${OS_VERSION}.noarch.rpm"
+            sudo yum install -qy yum-utils pssh sshpass jq wget
         }
 
         echo "Installing tools"
