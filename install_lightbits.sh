@@ -27,8 +27,9 @@
 #                    added check so that count for data and management IPs match
 #                    added logo and -s flag to silence logo
 # 23-Feb-2024 [FM]   fixed issue with epel installation
+# 29-Feb-2024 [FM]   fixed issue with pssh alias not working in ubuntu
 
-INSTALL_LIGHTBITS_VERSION="V1.10"
+INSTALL_LIGHTBITS_VERSION="V1.11"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -529,13 +530,20 @@ echo "Reboot"
 sudo shutdown -r now
 EOF
     fi
-    
-    if [ ${useKey} == 0 ]; then
-        echo "Using Password and running target configuration > sshpass -p ${password} pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -o StrictHostKeyChecking=false -l root -A -t 900 -i ${targetPrepCommands}"
-        sshpass -p ${password} pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-o StrictHostKeyChecking=false" -l root -A -t 900 -i "${targetPrepCommands}"
+
+    # Workaround for pssh being called different things
+    if ! [ -x "$(command -v pssh)" ]; then
+	    PSSH_COMMAND="parallel-ssh"
     else
-        echo "Using key and running target configuration > sudo pssh -h ${CURRENT_DIR}/${clusterName}/clients -x -i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false -t 900 -i ${targetPrepCommands}"
-        sudo pssh -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
+	    PSSH_COMMAND="pssh"
+    fi
+
+    if [ ${useKey} == 0 ]; then
+        echo "Using Password and running target configuration > sshpass -p ${password} ${PSSH_COMMAND} -h ${CURRENT_DIR}/${clusterName}/clients -x \"-o StrictHostKeyChecking=false\" -l root -A -t 900 -i ${targetPrepCommands}"
+        sshpass -p ${password} ${PSSH_COMMAND} -h "${CURRENT_DIR}/${clusterName}/clients" -x '-o StrictHostKeyChecking=false' -l root -A -t 900 -i "${targetPrepCommands}"
+    else
+        echo "Using key and running target configuration > ${PSSH_COMMAND} -h ${CURRENT_DIR}/${clusterName}/clients -x \"-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false\" -t 900 -i ${targetPrepCommands}"
+        ${PSSH_COMMAND} -h "${CURRENT_DIR}/${clusterName}/clients" -x "-i ${CURRENT_DIR}/${clusterName}/keys/${keyName} -o StrictHostKeyChecking=false" -t 900 -i "${targetPrepCommands}"
     fi
 }
 
@@ -887,8 +895,6 @@ RunPrecheck()
             echo "Installing using apt"
             sudo apt-get -qq update
             sudo apt-get -qq install pssh sshpass jq ca-certificates curl wget
-            # Set pssh as alias for parallel-ssh
-            alias pssh="parallel-ssh"
         }
 
         # Install packages with yum
