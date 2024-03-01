@@ -693,7 +693,7 @@ EOL
         }
         CalculateNoDisks
         serverCount=0
-        if [[ -z "${dataIps}" ]]; then # Use management IPs in host file
+        if [[ -z "${dataIPs}" ]]; then # Use management IPs in host file
             for host in "${serverIPs[@]}"; do
                 CreateServerFile "server${serverCount}" "${host}"
                 serverCount=$((serverCount+1))
