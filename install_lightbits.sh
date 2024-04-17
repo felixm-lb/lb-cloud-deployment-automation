@@ -29,7 +29,7 @@
 # 23-Feb-2024 [FM]   fixed issue with epel installation
 # 29-Feb-2024 [FM]   fixed issue with pssh alias not working in ubuntu
 # 03-Mar-2024 [FM]   updated builds for 3-7-1 releases
-# 17-Apr-2024 [FM]   updated builds for 3-8-1 releases
+# 17-Apr-2024 [HO]   updated builds for 3-8-1 releases
 
 INSTALL_LIGHTBITS_VERSION="V1.13"
 
