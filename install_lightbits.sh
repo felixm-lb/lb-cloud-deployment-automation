@@ -29,8 +29,9 @@
 # 23-Feb-2024 [FM]   fixed issue with epel installation
 # 29-Feb-2024 [FM]   fixed issue with pssh alias not working in ubuntu
 # 03-Mar-2024 [FM]   updated builds for 3-7-1 releases
+# 17-Apr-2024 [FM]   updated builds for 3-8-1 releases
 
-INSTALL_LIGHTBITS_VERSION="V1.12"
+INSTALL_LIGHTBITS_VERSION="V1.13"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -91,6 +92,11 @@ LB_JSON="{\"lbVersions\": [
         \"versionName\": \"lightos-3-7-1-rhl-9\",
         \"versionLightApp\": \"light-app-install-environment-v3.7.1~b1548.tgz\",
         \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
+    },
+    {
+        \"versionName\": \"lightos-3-8-1-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.8.1~b1647.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
     }
 ]}"
 CURRENT_DIR=`pwd`
@@ -109,7 +115,7 @@ DisplayHelp()
     p    Password - use SINGLE quotes ''.        'p@ssword12345!!'
     k    Path to key.                            /home/root/keys/key.pem
     t    Lightbits Repository token.             QWCEWVDASADSSsSD
-    v    Lightbits Version.                      lightos-3-5-1-rhl-8, lightos-3-6-1-rhl-8, lightos-3-7-1-rhl-8, lightos-3-7-1-rhl-9
+    v    Lightbits Version.                      lightos-3-5-1-rhl-8, lightos-3-6-1-rhl-8, lightos-3-7-1-rhl-8, lightos-3-7-1-rhl-9, lightos-3-8-1-rhl-8
     c    Lightbits Cluster Name.                 aws-cluster-0
     d    Data IPs.                               optional to provide data interface ips required for generic node case \"10.0.0.1,10.0.0.2,10.0.0.3\"
     f    Force.                                  used for forcing smaller or larger cluster sizes
