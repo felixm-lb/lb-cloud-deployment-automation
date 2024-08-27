@@ -28,8 +28,9 @@
 #                    added logo and -s flag to silence logo
 # 23-Feb-2024 [FM]   fixed issue with epel installation
 # 29-Feb-2024 [FM]   fixed issue with pssh alias not working in ubuntu
+# 27-Aug-2024 [FM]   added support for Lightbits v3.9.2 RHL8 and RHL9
 
-INSTALL_LIGHTBITS_VERSION="V1.11"
+INSTALL_LIGHTBITS_VERSION="V1.12"
 
 ## GLOBAL VARIABLES ##
 LB_JSON="{\"lbVersions\": [
@@ -84,6 +85,16 @@ LB_JSON="{\"lbVersions\": [
     {
         \"versionName\": \"lightos-3-7-1-rhl-8\",
         \"versionLightApp\": \"light-app-install-environment-v3.7.1~b1548.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
+    },
+    {
+        \"versionName\": \"lightos-3-9-2-rhl-8\",
+        \"versionLightApp\": \"light-app-install-environment-v3.9.2b56.tgz\",
+        \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
+    },
+    {
+        \"versionName\": \"lightos-3-9-2-rhl-9\",
+        \"versionLightApp\": \"light-app-install-environment-v3.9.2b56.tgz\",
         \"versionLbAnsible\": \"lb-ansible:v9.1.0\"
     }
 ]}"
